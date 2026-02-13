@@ -1,87 +1,99 @@
 """
-Docstring for PEMSAnalysisGUI11
+Update a Windows 11 color style 600x750 size PEMS Data Analysis PEMSAnalysisGUI(object) GUI using tkinter, pillow icons, and default font size 12, and the Python code here.
+1)	Create a text box with a "PEMS File" label and the "Select" button to select a CSV file. Read the selected file using self.df = pd.read_csv with encoding='utf-8', low_memory=False, skiprows=0, header=0 and skipping first 0 rows in the “read_file” fuction when clicking the " Select " button. 
+2)	Replace the "Select" button with the self.icon_folder for a Windows 11 style “Folder” large color icon. Display the "Select a file" when placing a mouse pointer on the "Select" icon. Adjust the textbox length to tightly fit with the "Select" button horizontally.
+3)	Remove columns with "Not Available" or "Unnamed" in the self.df.columns.
+4)	Update the “read_file” fuction by create eTIME by converting hh:mm:s.xxx format data in self.df['TIME] in seconds using the ensure_eTIME() function after reading the file and then add the following code part.
+5)	Use the following code before assigning columns_row, vars_row and units_row.
+if 'eTIME' not in self.df.columns:
+self.df.insert(1, 'eTIME', None)
+self.df.loc[0, 'eTIME'] = 'eTIME'
+self.df.loc[1, 'eTIME'] = 's'
+6)	Assign columns_row = self.df.columns, vars_row = self.df.loc[0, :] and units_row = self.df.loc[1, :]. Update self.df = self.df.loc[2:, :].
+7)	Create self.df_summary data frame starting from the row that contains the "Summary Information:" in the first column of self.df data frame using the summary_row_idx = pd.Index(self.df[first_col]).get_loc("Summary Information:") in the “read_file” function.
+8)	Save self.df_summary using self.df_summary.to_csv(). 
+9)	Create self.df = self.df.loc[2:summary_row_idx-1, :].copy()
+10)	Create pre_select_columns = ['eTIME', 'Gas Path', 'Catalyst Temperature', 'Limit Adjusted iSCB_RH', 'Ambient Pressure', 'Limit Adjusted iSCB_LAT', 'Load Percent',  'Limit Adjusted iCOOL_TEMP', 'Engine RPM', 'Vehicle Speed', 'Mass Air Flow Rate', 'Catalyst Temp. 1-1', 'F/A Equiv. Ratio', 'Engine Fuel Rate',  'Eng. Exh. Flow Rate', 'GPS Latitude', 'GPS Longitude', 'Limit Adjusted iGPS_ALT', 'Limit Adjusted iGPS_GROUND_SPEED', 'Fuel Rate', 'Instantaneous Fuel Flow',  'Derived Engine Torque.1', 'Derived Engine Power.1', 'Instantaneous Mass CO2', 'Instantaneous Mass CO', 'Instantaneous Mass NO', 'Instantaneous Mass NO2',  'Instantaneous Mass NOx', 'Corrected Instantaneous Mass NOx', 'Instantaneous Mass HC', 'Instantaneous Mass CH4', 'Instantaneous Mass NMHC', 'Instantaneous Mass O2', 'Air/Fuel Ratio at stoichiometry', 'Air/Fuel Ratio of Sample', 'Lambda', 'Ambient Temperature', 'AMB Ambient Temperature', 'Brake Specific Fuel Consumption', 'Mass Air Flow Rate.1'] in the “read_file” function.
+11)	Create  pre_select_vars = [ 'eTIME', 'sSTATUS_PATH', 'CatalystTemp', 'iSCB_RH', 'iSCB_LAP', 'iSCB_LAT', 'iENG_LOAD',  'iCOOL_TEMP', 'iENG_SPEED', 'iVEH_SPEED', 'CATEMP11', 'LAMBDA', 'ENG_FUEL_RATE', 'icMASS_FLOWx', 'EXH_RATE',  'iGPS_LAT', 'iGPS_LON', 'iGPS_ALT', 'iGPS_GROUND_SPEED', 'iWfgps', 'iWf', 'iPPTorq', 'iBhp', 'iCALCRT_CO2m', 'iCALCRT_COm', 'iCALCRT_NOm', 'iCALCRT_NO2m', 'iCALCRT_NOxm', 'iCALCRT_kNOxm', 'iCALCRT_HCm', 'iCALCRT_CH4m', 'iCALCRT_NMHCm', 'iCALCRT_O2m', 'AF_Stoich', 'AF_Calc', 'Lambda', 'AmbientTemp', 'AvgTemp.1', 'AmbTemp', 'iBSFC', 'iMAF', 'iMAP' ] in the “read_file” function
+12)	Create an "Input_file_dir" checkbox labeled "Process all CSV files in a Folder". Create the "Input_file_dir_checked" variable to pass the status. Create the "pre_selected_columns" checkbox button labeled the “Display Selected Data Fields only”. Locate an "Input_file_dir" checkbox and the “pre_selected_columns” checkbox horizontally.
+13)	After clicking the "btn_select" icon, select the pre_select_columns in the columns_listbox.  When you click the “btn_select” button, the items in pre_select_columns are selected in the columns_listbox.
+14)	Create a 10-row scrollable "columns_listbox" list box to display the data frame column header for data labeling. Label the "columns_listbox" list box with the "Data Fields". Enable multiple selection in the list box by clicking mouse pointers. 
+15)	Empty the "columns_listbox" list box before clicking the "btn_select" icon.
+16)	Create the “selected_columns_list” list to store additionally selected items in the “columns_listbox” list box. Show only the selected_columns_list in the “columns_listbox” list box when the “pre_selected_columns” checkbox is checked. Update the refresh_columns_listbox method so that when “Display Selected Data Fields only” is not checked, the listbox shows self.columns_row and then select any items that match selected_columns_list. 
+17)	Create a 5-row scrollable "align_listbox" list box labeled “Time Alignment” to display the 'Vehicle Speed', 'Engine RPM', 'Exhaust Mass Flow Rate', and 'Total Current' alignment data. Enable single selection in the list box by clicking a mouse pointer. 
+18)	Create a 5-row scrollable "data_format_listbox" list box labeled “Data Format” to display the 'EPA PEMS', 'EPA Dyno', 'EPA BEV', and 'FEV PEMS' alignment data. Select the 'EPA PEMS' in the "data_format_listbox" list box.
+19)	Locate the "align_listbox" label and "data_format_listbox" label horizontally.
+20)	Create an "Alignment" checkbox button and "Report" checkbox button horizontally to call back functions. Check the "Report" checkbox.
+21)	Locate the "Alignment" checkbox button and "Report" checkbox button horizontally.
+22)	Create a text box with an "OBD File" label. Display the "Press a OBD button to select an OBD/HEMDATA file" when placing a mouse pointer on the "OBD File" text box.
+23)	Create an "OBD" button. Replace the "OBD" button with the self.icon_truck for a Windows 11 color Truck icon to select a CSV file. Display the "Select OBD file" when placing a mouse pointer on the "OBD" icon. Only Enable the "OBD File" text box and "OBD" button when the "Alignment" checkbox is True.
+24)	Call the select_obd_file function to read the OBD file when clicking the "OBD" button. Read the selected file using tmp = pd.read_csv(file, encoding='utf-8', low_memory=False, skiprows=0, header=0). Remove columns with "Not Available" or "Unnamed" in the tmp.columns
+25)	Add the following code in the select_obd_file function to convert hh:mm:s.xxx format data in tmp['TIME] in seconds using the ensure_eTIME() function after reading the file and then add the following code part.
+26)	before assigning columns_row, vars_row and units_row in step 23).
+if 'eTIME' not in tmp.columns:
+tmp.insert(1, 'eTIME', None)
+tmp.loc[0, 'eTIME'] = 'eTIME'
+tmp.loc[1, 'eTIME'] = 's'
+27)	Assign columns_row = tmp.columns, vars_row = tmp.loc[0, :] and units_row = tmp.loc[1, :]. Update tmp = tmp.loc[2:, :]. Remove all NaN rows using tmp.dropna(how='all', inplace=True) and filter only tmp['sSTATUS_PATH'] == 'SAMPLE' rows.
+28)	Create self.obd_df_summary data frame starting from the row that contains the "Summary Information:" in the first column of tmp data frame using the summary_row_idx = pd.Index(tmp[first_col]).get_loc("Summary Information:") in the “select_obd_file” function.
+Create self.obd_df = tmp.loc[2:summary_row_idx-1, :].copy()
+29)	Save self.obd_df_summary using self.obd_df_summary.to_csv(). 
+30)	Adjust the horizontal x coordinate of the "OBD" button at the btn_select.winfo_x().
+31)	Adjust the “OBD File” text box width little less than the horizontal x coordinate of the "OBD" button.
+32)	Create the “frame_check_align” frame using tk.Frame and pack(fill="x", padx=20, pady=10). Create the "Check Alignment" button labeled the “btn_check_align“. Create a “ent_align_input” input textbox next to the "Check Alignment" button. Display the “Check/Plot Alignment” and the "Type Alignment Values to OBD" when placing a mouse pointer on the "Check Alignment" button and the “btn_check_align“ input textbox respectively. 
+33)	Enable the “ent_align_input“ input textbox if the “btn_check_align” alignment checkbox is True and “OBD File” text box is not empty.
+34)	Create a "Plot" button next to the “ent_align_input“ input textbox to call back the "plot_alignment” function. Enable only the "Plot" button when the “ent_align_input “ alignment input textbox is not empty.
+35)	Replace the "Plot" button labeled “btn_plot” using the self.icon_figure in the following code.
+36)	Adjust the horizontal x coordinate of the " btn_plot " button at the btn_select.winfo_x().
+37)	Display the "Plot Alignments" when placing a mouse pointer on the " btn_plot " button.
+38)	Create the following self.align_map code.
+self.align_map = {
+"Vehicle Speed": "iVEH_SPEED",
+"Engine RPM": "iENG_SPEED",
+"Exhaust Mass Flow Rate": "icMASS_FLOW",
+"Total Current": "TotalCurrent"
+}
+39)	Call back the plot_check_alignment when clicking the “btn_check_align“  button.
+40)	Close all opened figures using “if plt.get_fignums(): plt.close('all')” before calling the ImageDistanceMeasurer object in the “plot_check_alignment” function.
+41)	Create the “check_alignment_view” function to call back the “plot_alignment” function when clicking the self.btn_plot button. 
+self.plot_alignment(
+self.ent_pems.get(),
+self.ent_obd.get(),
+align_col
+)
+42)	Set the "Check Alignment" button with a light magenta-color background to call back "check_alignment()" function with the selected items in the "align_listbox".
+43)	Add the self.ent_pems.get(), self.ent_obd.get(), self.align_values_var.get() arguments the plot_alignment function. Plot df[self.align_values_var.get()] in the self.ent_pems.get() and self.ent_obd.get().
+44)	Create a font size 20, black bold font, "RUN" big button with a light blue-color background to call back the "run_analysis()" function.
+45)	Assign Alignment_checked and Report_checked variables to pass the "Alignment" and "Report" Checkbox check status.
+46)	Pre-select the 'Vehicle Speed' in the "align_listbox" listbox.
+47)	Fix the _tkinter.TclError: expected integer but got "UI"
+48)	Enable to select multiple items in both the columns_listbox. Enable to select a single item in the align_listbox.
+49)	Print the obd_ent, pems_ent, "Alignment", "Report", "Input_file_dir" checkbox status, "Check Alignment" button, align_values_ent textbox values, and the index of 'Vehicle Speed' in df.columns when clicking the "RUN" button. Keep current run_analysis() function in the code.
+50)	Fix automatically deselecting an item in a listbox while selecting an item in another listbox.
+51)	Update that converts the GUI to use two tabs labeled “Main” and “Options/Report” using a bold font size 12, while preserving all existing functionality. The “Main” tab contains PEMS/OBD, "Process all CSV files in a Folder" check box, Data Fields, Alignment, Report checkbox, and RUN controls. Change the “Options/Report” tab using blue color font.
+52)	Create a text box labeled the "Options/Controls:" and the "Import" button in the “Options/Report” tab to select a folder directory. The “Options/Report” tab contains Options import button (now using import.png), "options_listbox" list box and the "reportPMS_listbox" list box.
+53)	Create a 10-row scrollable "options_listbox" list box labeled “Options Lists” in the “Options/Report” tab to display the Excel and matlab .mlx files in the selected folder. Enable single selection in the list box by clicking a mouse pointer. Locate the "options_listbox" list box just below the “Import” button. Create self.df_options for reading data in the “Settings” worksheet of the double-clicked Excel file which contains the “RDE_Settings_” file name. Read a matlab .mlx file when double-clicking the .mlx file using the “import matlab.engine”
+54)	Create a 10-row scrollable "reportPMS_listbox" list box labeled “Report PDF” in the “Options/Report” tab. Enable single selection in the list box by clicking a mouse pointer. 
+55)	Create a text box labeled the "Options/Controls:" and the "Import" button in the “Options/Report” tab to select a folder directory. 
+56)	Draw a blue solid line between the "options_listbox"  and the "reportPMS_listbox" list box.
+57)	Create the “lbl_report_fmt” text box labeled “Report Format:”, “self.ent_report_format” input text box and the “self.btn_format” button labeled “Format” to select a folder directory just above the "reportPMS_listbox" list box in the “Options/Report” tab. Replace the “self.btn_format” button with the “PEMSreport.png” icon. Display the Excel and “.mlx” matlab files in the "reportPMS_listbox" list box in the selected folder when clicking the “self.btn_format” button.
+58)	Remove self.align_map.get(selected_value, selected_value) in the code and set align_col = selected_value.
+59)	Locate the “lbl_report_fmt” text box, “self.ent_report_format” input text box and the “self.btn_format” button just above the "reportPMS_listbox" list box in the “Options/Report” tab. 
+"""
+
+"""
+PEMSAnalysisGUI11 - Tabs Version
 Author: S. Lee
 
-Update a Windows 11 color style 600x750 size PEMS Data Analysis PEMSAnalysisGUI(object) GUI using tkinter, pillow icons, and default font size 12, and the Python code here.
-1)	Create a text box with a "PEMS File" label and the "Select" button to select a CSV file. Create the "Read" button to read the selected file using self.df = pd.read_csv with encoding='utf-8', low_memory=False, skiprows=0, header=0 and skipping first 0 rows when clicking the "Read" button. 
-2)	Replace the "Select" button with the self.icon_folder for a Windows 11 color "Folder" large icon. Replace the "Read" button with the self.icon_read for Windows 11 color "Read File" large icon. Display the "Select a file" and "Read File" when placing a mouse pointer on the "Select" icon and "Read" icon respectively. Adjust the textbox length to tightly fit with the "Select" icon and "Read" icon horizontally.
-3)	Remove columns with "Not Available" or "Unnamed" in the self.df.columns.
-4)	Update the “read_file” fuction in the code by create eTIME by converting hh:mm:s.xxx format data in self.df['sTIME] in seconds using the ensure_eTIME() function after reading the file and then add the following code part.
-5)	Use the following code before assigning columns_row, vars_row and units_row in step 6).
-    if 'eTIME' not in self.df.columns:
-        self.df.insert(1, 'eTIME', None)
-        self.df.loc[0, 'eTIME'] = 'eTIME'
-        self.df.loc[1, 'eTIME'] = 's'
-6)	Assign columns_row = self.df.columns, vars_row = self.df.loc[0, :] and units_row = self.df.loc[1, :]. Update self.df = self.df.loc[2:, :].
-7)	Create pre_select_columns = ['eTIME', 'Gas Path', 'Catalyst Temperature', 'Limit Adjusted iSCB_RH', 'Ambient Pressure', 'Limit Adjusted iSCB_LAT', 'Load Percent',  'Limit Adjusted iCOOL_TEMP', 'Engine RPM', 'Vehicle Speed', 'Mass Air Flow Rate', 'Catalyst Temp. 1-1', 'F/A Equiv. Ratio', 'Engine Fuel Rate',  'Eng. Exh. Flow Rate', 'GPS Latitude', 'GPS Longitude', 'Limit Adjusted iGPS_ALT', 'Limit Adjusted iGPS_GROUND_SPEED', 'Fuel Rate', 'Instantaneous Fuel Flow',  'Derived Engine Torque.1', 'Derived Engine Power.1', 'Instantaneous Mass CO2', 'Instantaneous Mass CO', 'Instantaneous Mass NO', 'Instantaneous Mass NO2',  'Instantaneous Mass NOx', 'Corrected Instantaneous Mass NOx', 'Instantaneous Mass HC', 'Instantaneous Mass CH4', 'Instantaneous Mass NMHC', 'Instantaneous Mass O2', 'Air/Fuel Ratio at stoichiometry', 'Air/Fuel Ratio of Sample', 'Lambda', 'Ambient Temperature', 'AMB Ambient Temperature', 'Brake Specific Fuel Consumption', 'Mass Air Flow Rate.1'] in the “read_file” function.
-8)	Create  pre_select_vars = [ 'eTIME', 'sSTATUS_PATH', 'CatalystTemp', 'iSCB_RH', 'iSCB_LAP', 'iSCB_LAT', 'iENG_LOAD',  'iCOOL_TEMP', 'iENG_SPEED', 'iVEH_SPEED', 'CATEMP11', 'LAMBDA', 'ENG_FUEL_RATE', 'icMASS_FLOWx', 'EXH_RATE',  'iGPS_LAT', 'iGPS_LON', 'iGPS_ALT', 'iGPS_GROUND_SPEED', 'iWfgps', 'iWf', 'iPPTorq', 'iBhp', 'iCALCRT_CO2m', 'iCALCRT_COm', 'iCALCRT_NOm', 'iCALCRT_NO2m', 'iCALCRT_NOxm', 'iCALCRT_kNOxm', 'iCALCRT_HCm', 'iCALCRT_CH4m', 'iCALCRT_NMHCm', 'iCALCRT_O2m', 'AF_Stoich', 'AF_Calc', 'Lambda', 'AmbientTemp', 'AvgTemp.1', 'AmbTemp', 'iBSFC', 'iMAF', 'iMAP' ] in the “read_file” function
-9)	Create an "Input_file_dir" checkbox button labeled "Check to process all CSV file in a folder". Create the "Input_file_dir_checked" variable to pass the status.
-10)	After clicking the "btn_read" icon, select the  pre_select_columns in the columns_listbox.  When you click the “Read” (btn_read) button, the items in pre_select_columns are selected in the columns_listbox.
-11)	Create a 10-row scrollable "columns_listbox" list box to display the data frame column header for data labeling. Label the "columns_listbox" list box with the "Data Fields". Enable multiple selection in the list box by clicking mouse pointers. 
-12)	Empty the "columns_listbox" list box before clicking the "Read" icon.
-13)	Create the "pre_selected_columns" checkbox button labeled the “Display Selected Data Fields only”. Place the “pre_selected_columns” checkbox directly below the “columns_listbox” by introducing a listbox container frame. 
-14)	Create the “selected_columns_list” list to store additionally selected items in the “columns_listbox” list box. Show only the selected_columns_list in the “columns_listbox” list box when the “pre_selected_columns” checkbox is checked. Update the refresh_columns_listbox method so that when “Display Selected Data Fields only” is not checked, the listbox shows self.columns_row and then select any items that match selected_columns_list. 
-15)	Create a 5-row scrollable "align_listbox" list box to display the 'Vehicle Speed', 'Engine RPM', 'Exhaust Mass Flow Rate', and 'Total Current' alignment data.
-16)	Enable multiple selection in the list box by clicking mouse pointers. 
-17)	Label the "align_listbox" list box with the "Time Alignment".
-18)	Set the align_listbox width equal to the columns_listbox width.
-19)	Create an "Alignment" checkbox button and "Report" checkbox button horizontally to call back functions. Check the "Report" checkbox.
-20)	Create a text box with an "OBD File" label. Display the "Press a OBD button to select an OBD/HEMDATA file" when placing a mouse pointer on the "OBD File" text box.
-21)	Create an "OBD" button. Replace the "OBD" button with the self.icon_truck for a Windows 11 color Truck icon to select a CSV file. Display the "Select OBD file" when placing a mouse pointer on the "OBD" icon. Only Enable the "OBD File" text box and "OBD" button when the "Alignment" checkbox is True.
-22)	Call the select_obd_file function to read the OBD file when clicking the "OBD" button. Add the following code in the select_obd_file function to convert hh:mm:s.xxx format data in self.df['sTIME] in seconds using the ensure_eTIME() function after reading the file and then add the following code part.
-before assigning columns_row, vars_row and units_row in step 23).
-    if 'eTIME' not in self.df.columns:
-        tmp.insert(1, 'eTIME', None)
-        tmp.loc[0, 'eTIME'] = 'eTIME'
-        tmp.loc[1, 'eTIME'] = 's'
-23)	Assign columns_row = tmp.columns, vars_row = tmp.loc[0, :] and units_row = tmp.loc[1, :]. Update tmp = tmp.loc[2:, :].
-24)	Create tmp.df_summary data frame starting from the row that contains the "Summary Information:" in the first column of tmp data frame using the summary_row_idx = pd.Index(tmp[first_col]).get_loc("Summary Information:") in the “select_obd_file” function.
-I.	Save tmp.df_summary using tmp.df_summary.to_csv().
-II.	Create  tmp = tmp.loc[2:summary_row_idx-1, :].copy()
-25)	Adjust the horizontal x coordinate of the "OBD" button at the btn_read.winfo_x().
-26)	Adjust the “OBD File” text box width little less than the horizontal x coordinate of the "OBD" button.
-27)	Create the “frame_check_align” frame using tk.Frame and pack(fill="x", padx=20, pady=10). Create the "Check Alignment" button labeled the “btn_check_align“. Create a “ent_align_input” input textbox next to the "Check Alignment" button. Display the “Check/Plot Alignment” and the "Type Alignment Values to OBD" when placing a mouse pointer on the "Check Alignment" button and the “btn_check_align“ input textbox respectively. 
-28)	Enable the “ent_align_input “ input textbox if the “btn_check_align” alignment checkbox is True and “OBD File” text box is not empty.
-29)	Create a "Plot" button next to the  “ent_align_input “ input textbox to call back the "plot_alignment” function. Enable only the "Plot" button when the “ent_align_input “ alignment input textbox is not empty.
-30)	Replace the "Plot" button labeled “btn_plot” using  the self.icon_figure in the following code.
-31)	Adjust the horizontal x coordinate of the " btn_plot " button at the btn_read.winfo_x().
-32)	Display the "Plot Alignments" when placing a mouse pointer on the " btn_plot " button.
-33)	Create the following self.align_map code.
-        self.align_map = {
-            "Vehicle Speed": "iVEH_SPEED",
-            "Engine RPM": "iENG_SPEED",
-            "Exhaust Mass Flow Rate": "icMASS_FLOW",
-            "Total Current": "TotalCurrent"
-        }
-34)	Call back the plot_check_alignment when clicking the “btn_check_align“  button.
-35)	Use   the following part in the “plot_check_alignment” function.
-        ImageDistanceMeasurer(pems_df, self.data_to_align, align_col)
-36)	Create the “check_alignment_view” function to call back the “plot_alignment” function when clicking the self.btn_plot button. 
-self.plot_alignment(
-            self.ent_pems.get(),
-            self.ent_obd.get(),
-            align_col
-        )
-37)	Set the "Check Alignment" button with a light magenta-color background to call back "check_alignment()" function with the selected items in the "align_listbox".
-38)	Add the self.ent_pems.get(), self.ent_obd.get(), self.align_values_var.get() arguments the plot_alignment function. Plot df[self.align_values_var.get()] in the self.ent_pems.get() and self.ent_obd.get().
-39)	Create a font size 20, black bold font, "RUN" big button with a light blue-color background to call back the "run_analysis()" function.
-40)	Assign Alignment_checked and Report_checked variables to pass the "Alignment" and "Report" Checkbox check status.
-41)	Pre-select the 'Vehicle Speed' in the "align_listbox" listbox.
-42)	Fix the _tkinter.TclError: expected integer but got "UI"
-43)	Enable to select multiple items in both the columns_listbox. Enable to select a single item in the align_listbox.
-44)	Print the obd_ent, pems_ent, "Alignment", "Report", "Input_file_dir" checkbox status, "Check Alignment" button, align_values_ent textbox values, and the index of 'Vehicle Speed' in df.columns when clicking the "RUN" button. Keep current run_analysis() function in the code.
-45)	 Fix automatically deselecting an item in a listbox while selecting an item in another listbox
-46)	Create df_summary data frame starting from the row that contains the "Summary Information:" in the first column of df data frame using the summary_row_idx = pd.Index(df[first_col]).get_loc("Summary Information:") in the “read_file” function.
-Save self.df_summary using self.df_summary.to_csv(). 
-Create  self.df = self.df.loc[2:summary_row_idx-1, :].copy()
-
+Windows 11 color style PEMS Data Analysis GUI, 600x750, tkinter + Pillow icons,
+default font size 12. Implements requirements 1-59.
 """
 
 import os
 import math
 import pandas as pd
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk, ImageDraw
 
 # matplotlib for plotting
@@ -92,15 +104,47 @@ import matplotlib.pyplot as plt
 # -------------------------------------------------------------------------
 # Utilities
 # -------------------------------------------------------------------------
+import matlab.engine
+import os
+
+def read_mlx_content(mlx_file_path):
+    # 1. Start the MATLAB engine
+    print("Starting MATLAB engine...")
+    eng = matlab.engine.start_matlab()
+
+    try:
+        # Resolve absolute path for MATLAB
+        abs_path = os.path.abspath(mlx_file_path)
+        temp_m_file = abs_path.replace('.mlx', '_converted.m')
+
+        # 2. Use MATLAB's 'export' function to convert MLX to plain text .m
+        # Note: 'export' requires MATLAB R2022a or later
+        print(f"Converting {mlx_file_path} to {temp_m_file}...")
+        eng.export(abs_path, temp_m_file, nargout=0)
+
+        # 3. Read the converted .m file content in Python
+        with open(temp_m_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Optional: Clean up the temporary file
+        # os.remove(temp_m_file)
+        
+        return content
+
+    except Exception as e:
+        return f"Error: {e}"
+    finally:
+        # 4. Always stop the engine to free resources
+        eng.quit()
 
 def get_time_axis(df_local):
     if 'eTIME' in df_local.columns:
         return pd.to_numeric(df_local['eTIME'], errors='coerce')
     else:
         return pd.Series(range(len(df_local)), dtype=float)
-            
+
 def ensure_eTIME(df_local):
-    """Ensure df_local has a numeric 'eTIME' column in seconds, derived from 'sTIME' (hh:mm:s.xxx) if needed."""
+    """Ensure df_local has a numeric 'eTIME' column in seconds, derived from 'TIME' (hh:mm:s.xxx) if needed."""
     if df_local is None or df_local.empty:
         return df_local
 
@@ -136,25 +180,58 @@ def ensure_eTIME(df_local):
         except Exception:
             return math.nan
 
-    # If eTIME exists but is non-numeric, rebuild from sTIME
+    # If eTIME exists but is non-numeric, rebuild from TIME
     if 'eTIME' in df_local.columns:
         df_local['eTIME'] = pd.to_numeric(df_local['eTIME'], errors='coerce')
-        if df_local['eTIME'].isna().all() and 'sTIME' in df_local.columns:
-            df_local['eTIME'] = df_local['sTIME'].apply(convert_to_seconds)
-            # Normalize to start at zero if possible
+        if df_local['eTIME'].isna().all() and 'TIME' in df_local.columns:
+            df_local['eTIME'] = df_local['TIME'].apply(convert_to_seconds)
             try:
                 df_local['eTIME'] = df_local['eTIME'] - float(df_local.loc[2, 'eTIME'])
             except Exception:
                 pass
-    elif 'sTIME' in df_local.columns:
+    elif 'TIME' in df_local.columns:
         df_local.insert(1, 'eTIME', None)
-        df_local['eTIME'] = df_local['sTIME'].apply(convert_to_seconds)
-        # Normalize to start at zero if possible
+        df_local['eTIME'] = df_local['TIME'].apply(convert_to_seconds)
         try:
             df_local['eTIME'] = df_local['eTIME'] - float(df_local.loc[2, 'eTIME'])
         except Exception:
             pass
     return df_local
+
+class ZoomManager:
+    def __init__(self, fig, ax):
+        self.fig = fig
+        self.ax = ax
+        self.base_scale = 1.1  # Zoom intensity
+        self.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
+        self.fig.canvas.mpl_connect('key_press_event', self.on_key)
+
+    def on_scroll(self, event):
+        if event.inaxes != self.ax:
+            return
+        scale_factor = 1 / self.base_scale if event.button == 'up' else self.base_scale
+        self._apply_zoom(scale_factor, event.xdata, event.ydata)
+
+    def on_key(self, event):
+        if 'ctrl+' in event.key:
+            if '+' in event.key or '=' in event.key:
+                self._apply_zoom(1 / self.base_scale)
+            elif '-' in event.key:
+                self._apply_zoom(self.base_scale)
+
+    def _apply_zoom(self, scale_factor, x_center=None, y_center=None):
+        cur_xlim = self.ax.get_xlim()
+        cur_ylim = self.ax.get_ylim()
+        if x_center is None:
+            x_center = (cur_xlim[0] + cur_xlim[1]) / 2
+            y_center = (cur_ylim[0] + cur_ylim[1]) / 2
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+        rel_x = (cur_xlim[1] - x_center) / (cur_xlim[1] - cur_xlim[0])
+        rel_y = (cur_ylim[1] - y_center) / (cur_ylim[1] - cur_ylim[0])
+        self.ax.set_xlim([x_center - new_width * (1 - rel_x), x_center + new_width * rel_x])
+        self.ax.set_ylim([y_center - new_height * (1 - rel_y), y_center + new_height * rel_y])
+        self.fig.canvas.draw_idle()
 
 class ImageDistanceMeasurer:
     """
@@ -162,10 +239,7 @@ class ImageDistanceMeasurer:
     against plotted series. Used when align_values_var is empty or for visual checks.
     """
     def __init__(self, pems_df, data_to_plot, align_col):
-        # if self.fig is None or not plt.fignum_exists(self.fig.number):
         self.fig, self.ax = plt.subplots(figsize=(19.2, 10.8))
-        # else:
-        #     plt.figure(self.fig.number)
 
         idx = 0
         for x_vals, y_vals, label in (data_to_plot):
@@ -185,6 +259,7 @@ class ImageDistanceMeasurer:
         self.elements = []
 
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        zm = ZoomManager(self.fig, self.ax)
         plt.show()
 
     def onclick(self, event):
@@ -200,7 +275,6 @@ class ImageDistanceMeasurer:
         if len(self.points) == 2:
             (x1, y1), (x2, y2) = self.points
             dx, dy = (x2 - x1), (y2 - y1)
-
             h_line, = self.ax.plot([x1, x2], [y1, y1], 'b--', alpha=0.8)
             v_line, = self.ax.plot([x2, x2], [y1, y2], 'g--', alpha=0.8)
             h_text = self.ax.text((x1 + x2) / 2, y1, f' {dx:.1f}px', color='blue', va='bottom')
@@ -223,27 +297,29 @@ class ImageDistanceMeasurer:
 # Main GUI Class
 # -------------------------------------------------------------------------
 class PEMSAnalysisGUI(object):
-    """
-    PEMSAnalysisGUI11
-    Author: S. Lee
-
-    Windows 11 color style PEMS Data Analysis GUI, 600x750, tkinter + Pillow icons,
-    default font size 12. Implements requirements 1-46.
-    """
     def __init__(self, root):
         self.root = root
         self.root.title("PEMS Data Analysis")
         self.root.geometry("600x750")
         self.root.configure(bg="#f3f3f3")  # Windows 11 Light Grey Background
 
-        # Fonts (Fix for TclError: use proper tuples; do not pass strings into width/height)
+        # Fonts
         self.font_default = ("Segoe UI", 12)
         self.font_header = ("Segoe UI", 12, "bold")
         self.font_run = ("Segoe UI", 20, "bold")
 
+        # ttk style for Notebook tabs (bold font size 12)
+        style = ttk.Style()
+        try:
+            style.configure('TNotebook.Tab', font=self.font_header)
+        except Exception:
+            # Helps avoid _tkinter.TclError if a theme expects integer sizes
+            pass
+
         # Variables
         self.df = None
         self.df_summary = None
+        self.df_template = None
         self.columns_row = None
         self.vars_row = None
         self.units_row = None
@@ -252,11 +328,16 @@ class PEMSAnalysisGUI(object):
         self.obd_df = None
         self.obd_df_summary = None
 
+        self.df_options = None  # Options Excel Settings sheet
+
         self.data_to_align = None
 
         self.pems_file_path = tk.StringVar()
         self.obd_file_path = tk.StringVar()
+        self.template_file_path = tk.StringVar()
+        self.report_format_path = tk.StringVar()     # used as folder path in Options/Report tab (step 57)
         self.align_values_var = tk.StringVar()
+        self.options_dir_var = tk.StringVar()
 
         # Checkbox Variables
         self.input_file_dir_checked = tk.BooleanVar()
@@ -264,10 +345,10 @@ class PEMSAnalysisGUI(object):
         self.report_checked = tk.BooleanVar(value=True)  # Default True
         self.pre_selected_columns_var = tk.BooleanVar()  # Display Selected Data Fields only
 
-        # Storage for user selections (14)
+        # State Storage
         self.selected_columns_list = []
 
-        # Pre-select lists (7, 8)
+        # Pre-select lists
         self.pre_select_columns = [
             'eTIME', 'Gas Path', 'Catalyst Temperature', 'Limit Adjusted iSCB_RH',
             'Ambient Pressure', 'Limit Adjusted iSCB_LAT', 'Load Percent',
@@ -294,10 +375,9 @@ class PEMSAnalysisGUI(object):
             'iCALCRT_CH4m', 'iCALCRT_NMHCm', 'iCALCRT_O2m', 'AF_Stoich', 'AF_Calc',
             'Lambda', 'AmbientTemp', 'AvgTemp.1', 'AmbTemp', 'iBSFC', 'iMAF', 'iMAP'
         ]
-        # Map "friendly display" header -> variable name header
         self.columns_vars_map = dict(zip(self.pre_select_columns, self.pre_select_vars))
 
-        # Alignment label to DataFrame column mapping (33)
+        # 38) Alignment map (not used per step 58)
         self.align_map = {
             "Vehicle Speed": "iVEH_SPEED",
             "Engine RPM": "iENG_SPEED",
@@ -305,22 +385,40 @@ class PEMSAnalysisGUI(object):
             "Total Current": "TotalCurrent"
         }
 
-        # Trace variables
+        # Alignment items shown (no mapping applied by default; per step 58)
+        self.align_items = ['Vehicle Speed', 'Engine RPM', 'Exhaust Mass Flow Rate', 'Total Current']
+
+        # Traces
         self.obd_file_path.trace_add("write", self.check_alignment_input_state)
         self.alignment_checked.trace_add("write", self.toggle_obd_widgets)
         self.align_values_var.trace_add("write", self.update_plot_button_state)
         self.pre_selected_columns_var.trace_add("write", self.refresh_columns_listbox)
 
-        # Icons (in-memory)
+        # Icons
         self.icon_folder = self.create_icon("Folder", "#ffe680", "#E8B931")
         self.icon_read = self.create_icon("Read", "#ffffff", "#0078d4", text_color="#0078d4")
         self.icon_truck = self.create_icon("Truck", "#73ec8e", "#107c10")
         self.icon_figure = self.create_icon("Figure", "#73ec8e", "#107c10")
+        self.icon_import = self.load_icon_from_file("import.png", size=(40, 30))
+        self.icon_PEMSreport = self.load_icon_from_file("PEMSreport.png", size=(40, 30))
+        self.icon_Folder24 = self.load_icon_from_file("Folder_24.png", size=(40, 30))
 
         # =========================================================================
-        # 1) PEMS File Section
+        # Notebook Tabs (Main, Options/Report)
         # =========================================================================
-        self.frame_pems = tk.Frame(root, bg="#f3f3f3")
+        self.notebook = ttk.Notebook(self.root)
+        self.tab_main = tk.Frame(self.notebook, bg="#f3f3f3")
+        self.tab_opts = tk.Frame(self.notebook, bg="#f3f3f3")
+        self.notebook.add(self.tab_main, text="Main")
+        self.notebook.add(self.tab_opts, text="Options/Report")
+        self.notebook.pack(fill="both", expand=True)
+
+        # =========================================================================
+        # MAIN TAB CONTENTS
+        # =========================================================================
+
+        # 1-2) PEMS File Section
+        self.frame_pems = tk.Frame(self.tab_main, bg="#f3f3f3")
         self.frame_pems.pack(fill="x", padx=20, pady=(15, 5))
 
         lbl_pems = tk.Label(self.frame_pems, text="PEMS File", font=self.font_default, bg="#f3f3f3")
@@ -329,39 +427,36 @@ class PEMSAnalysisGUI(object):
         self.ent_pems = tk.Entry(self.frame_pems, textvariable=self.pems_file_path, font=self.font_default)
         self.ent_pems.grid(row=0, column=1, sticky="ew")
 
-        self.btn_select = tk.Button(self.frame_pems, image=self.icon_folder, command=self.select_pems_file,
-                                    bd=0, bg="#f3f3f3", activebackground="#e5e5e5", cursor="hand2")
+        self.btn_select = tk.Button(self.frame_pems, image=(self.icon_Folder24 or self.icon_folder),
+                                    command=self.select_pems_file, bd=0, bg="#f3f3f3",
+                                    activebackground="#e5e5e5", cursor="hand2")
         self.btn_select.grid(row=0, column=2, padx=5)
         self.create_tooltip(self.btn_select, "Select a file")
+        self.frame_pems.columnconfigure(1, weight=1)
 
-        self.btn_read = tk.Button(self.frame_pems, image=self.icon_read, command=self.read_file,
-                                  bd=0, bg="#f3f3f3", activebackground="#e5e5e5", cursor="hand2")
-        self.btn_read.grid(row=0, column=3, padx=5)
-        self.create_tooltip(self.btn_read, "Read File")
+        # 12) Input folder checkbox + Display Selected checkbox (horizontal)
+        self.frame_checks_top = tk.Frame(self.tab_main, bg="#f3f3f3")
+        self.frame_checks_top.pack(fill="x", padx=20, pady=(0, 5))
 
-        self.frame_pems.columnconfigure(1, weight=1)  # Tight fit between label and icons
+        self.chk_input_dir = tk.Checkbutton(self.frame_checks_top, text="Process all CSV files in a Folder",
+                                            variable=self.input_file_dir_checked,
+                                            font=self.font_default, bg="#f3f3f3",
+                                            activebackground="#f3f3f3", selectcolor="white")
+        self.chk_input_dir.pack(side="left", padx=(0, 15))
 
-        # =========================================================================
-        # 9) Input Directory Checkbox
-        # =========================================================================
-        self.frame_dir = tk.Frame(root, bg="#f3f3f3")
-        self.frame_dir.pack(fill="x", padx=20, pady=0)
-        chk_input_dir = tk.Checkbutton(self.frame_dir,
-                                       text="Check to process all CSV file in a folder",
-                                       variable=self.input_file_dir_checked,
-                                       font=self.font_default, bg="#f3f3f3",
-                                       activebackground="#f3f3f3", selectcolor="white")
-        chk_input_dir.pack(anchor="w")
+        self.chk_pre_selected = tk.Checkbutton(
+            self.frame_checks_top, text=" Display Selected Data Fields only",
+            variable=self.pre_selected_columns_var,
+            font=self.font_default, bg="#f3f3f3", activebackground="#f3f3f3"
+        )
+        self.chk_pre_selected.pack(side="left")
 
-        # =========================================================================
-        # 11) Data Fields Listbox
-        # =========================================================================
-        self.frame_cols = tk.Frame(root, bg="#f3f3f3")
+        # 14) Data Fields Listbox (10 rows)
+        self.frame_cols = tk.Frame(self.tab_main, bg="#f3f3f3")
         self.frame_cols.pack(fill="x", padx=20, pady=5)
 
         tk.Label(self.frame_cols, text="Data Fields", font=self.font_header, bg="#f3f3f3").pack(anchor="w")
 
-        # Create a container so the checkbox sits directly below the listbox+scrollbar row
         lb_container = tk.Frame(self.frame_cols, bg="#f3f3f3")
         lb_container.pack(fill="x", pady=(2, 2))
 
@@ -372,58 +467,58 @@ class PEMSAnalysisGUI(object):
         self.columns_listbox.pack(side="left", fill="both", expand=True)
         sb_cols.config(command=self.columns_listbox.yview)
         sb_cols.pack(side="right", fill="y")
-
-        # Track user selections to build selected_columns_list (14)
         self.columns_listbox.bind("<<ListboxSelect>>", self.update_selected_columns_list)
 
-        # 13) Pre-selected Columns Checkbox (now just below the listbox)
-        self.chk_pre_selected = tk.Checkbutton(
-            self.frame_cols, text="Display Selected Data Fields only",
-            variable=self.pre_selected_columns_var,
-            font=self.font_default, bg="#f3f3f3", activebackground="#f3f3f3"
-        )
-        self.chk_pre_selected.pack(anchor="w", pady=(4, 4))
+        # 17, 18, 19) Time Alignment & Data Format (side-by-side)
+        self.frame_align_and_format = tk.Frame(self.tab_main, bg="#f3f3f3")
+        self.frame_align_and_format.pack(fill="x", padx=20, pady=5)
 
-        # =========================================================================
-        # 14-17) Time Alignment Listbox
-        # =========================================================================
-        self.frame_align_list = tk.Frame(root, bg="#f3f3f3")
-        self.frame_align_list.pack(fill="x", padx=20, pady=5)
+        # Left: Time Alignment
+        left = tk.Frame(self.frame_align_and_format, bg="#f3f3f3")
+        left.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
-        tk.Label(self.frame_align_list, text="Time Alignment", font=self.font_header, bg="#f3f3f3").pack(anchor="w")
-
-        sb_align = tk.Scrollbar(self.frame_align_list, orient="vertical")
-        self.align_listbox = tk.Listbox(self.frame_align_list, height=5, font=self.font_default,
+        tk.Label(left, text="Time Alignment", font=self.font_header, bg="#f3f3f3").pack(anchor="w")
+        sb_align = tk.Scrollbar(left, orient="vertical")
+        self.align_listbox = tk.Listbox(left, height=5, font=self.font_default,
                                         selectmode=tk.SINGLE, yscrollcommand=sb_align.set,
                                         exportselection=False, borderwidth=1, relief="solid")
+        for item in self.align_items:
+            self.align_listbox.insert(tk.END, item)
+        self.align_listbox.selection_set(0)  # 46) Pre-select Vehicle Speed
         sb_align.config(command=self.align_listbox.yview)
         sb_align.pack(side="right", fill="y")
-        self.align_listbox.pack(side="left", fill="x", expand=True)
+        self.align_listbox.pack(side="left", fill="both", expand=True)
 
-        # Populate Alignment Options and pre-select 'Vehicle Speed' (41, 43)
-        align_opts = ['Vehicle Speed', 'Engine RPM', 'Exhaust Mass Flow Rate', 'Total Current']
-        for item in align_opts:
-            self.align_listbox.insert(tk.END, item)
-        self.align_listbox.selection_set(0)
+        # Right: Data Format
+        right = tk.Frame(self.frame_align_and_format, bg="#f3f3f3")
+        right.pack(side="left", fill="both", expand=True)
 
-        # =========================================================================
-        # 19) Alignment & Report Checkboxes
-        # =========================================================================
-        self.frame_checks = tk.Frame(root, bg="#f3f3f3")
-        self.frame_checks.pack(fill="x", padx=20, pady=5)
+        tk.Label(right, text="Data Format", font=self.font_header, bg="#f3f3f3").pack(anchor="w")
+        sb_fmt = tk.Scrollbar(right, orient="vertical")
+        self.data_format_listbox = tk.Listbox(right, height=5, font=self.font_default,
+                                              selectmode=tk.SINGLE, yscrollcommand=sb_fmt.set,
+                                              exportselection=False, borderwidth=1, relief="solid")
+        for item in ['EPA PEMS', 'EPA Dyno', 'EPA BEV', 'FEV PEMS']:
+            self.data_format_listbox.insert(tk.END, item)
+        self.data_format_listbox.selection_set(0)  # 18) Select 'EPA PEMS'
+        sb_fmt.config(command=self.data_format_listbox.yview)
+        sb_fmt.pack(side="right", fill="y")
+        self.data_format_listbox.pack(side="left", fill="both", expand=True)
 
-        chk_align = tk.Checkbutton(self.frame_checks, text="Alignment", variable=self.alignment_checked,
-                                   font=self.font_default, bg="#f3f3f3", activebackground="#f3f3f3")
-        chk_align.pack(side="left", padx=(0, 20))
+        # 20, 21) Alignment & Report checkboxes (horizontal)
+        self.frame_checks_mid = tk.Frame(self.tab_main, bg="#f3f3f3")
+        self.frame_checks_mid.pack(fill="x", padx=20, pady=5)
 
-        chk_report = tk.Checkbutton(self.frame_checks, text="Report", variable=self.report_checked,
-                                    font=self.font_default, bg="#f3f3f3", activebackground="#f3f3f3")
-        chk_report.pack(side="left")
+        self.chk_align = tk.Checkbutton(self.frame_checks_mid, text="Alignment", variable=self.alignment_checked,
+                                        font=self.font_default, bg="#f3f3f3", activebackground="#f3f3f3")
+        self.chk_align.grid(row=0, column=0, sticky="w", padx=(0, 10))
 
-        # =========================================================================
-        # 20-22) OBD File Section
-        # =========================================================================
-        self.frame_obd = tk.Frame(root, bg="#f3f3f3")
+        self.chk_report = tk.Checkbutton(self.frame_checks_mid, text="Report", variable=self.report_checked,
+                                         font=self.font_default, bg="#f3f3f3", activebackground="#f3f3f3")
+        self.chk_report.grid(row=0, column=1, sticky="w", padx=(0, 10))
+
+        # 22-23) OBD File Section
+        self.frame_obd = tk.Frame(self.tab_main, bg="#f3f3f3")
         self.frame_obd.pack(fill="x", padx=20, pady=5)
 
         tk.Label(self.frame_obd, text="OBD File", font=self.font_default, bg="#f3f3f3")\
@@ -439,16 +534,12 @@ class PEMSAnalysisGUI(object):
                                  cursor="hand2", state="disabled")
         self.btn_obd.grid(row=0, column=3, padx=5)
         self.create_tooltip(self.btn_obd, "Select OBD file")
-
         self.frame_obd.columnconfigure(1, weight=1)
 
-        # =========================================================================
-        # 27-33) Check Alignment and Plot controls
-        # =========================================================================
-        self.frame_check_align = tk.Frame(root, bg="#f3f3f3")
+        # 32-41) Check Alignment & Plot controls
+        self.frame_check_align = tk.Frame(self.tab_main, bg="#f3f3f3")
         self.frame_check_align.pack(fill="x", padx=20, pady=10)
 
-        # 37) Magenta background, callback with selected items
         self.btn_check_align = tk.Button(self.frame_check_align, text="Check Alignment",
                                          command=self.check_alignment, font=self.font_default, bg="#ff80ff", width=16)
         self.btn_check_align.pack(side="left", padx=(0, 10))
@@ -459,7 +550,6 @@ class PEMSAnalysisGUI(object):
         self.ent_align_input.pack(side="left", fill="x", expand=True)
         self.create_tooltip(self.ent_align_input, "Type Alignment Values to OBD")
 
-        # 30-32) Plot button with icon_figure placed at btn_read x
         self.btn_plot = tk.Button(self.frame_check_align, image=self.icon_figure, relief="flat",
                                   bg="#F3F3F3", activebackground="#EDEDED",
                                   command=self.check_alignment_view,
@@ -467,15 +557,93 @@ class PEMSAnalysisGUI(object):
         self.btn_plot.pack(side="left", padx=(10, 0))
         self.create_tooltip(self.btn_plot, "Plot Alignments")
 
-        # =========================================================================
-        # 39) RUN Button
-        # =========================================================================
-        self.btn_run = tk.Button(root, text="RUN", command=self.run_analysis,
+        # 44) RUN Button
+        self.btn_run = tk.Button(self.tab_main, text="RUN", command=self.run_analysis,
                                  font=self.font_run, bg="#add8e6", height=1)
         self.btn_run.pack(fill="x", padx=20, pady=(10, 20))
 
-        # Position OBD and Plot buttons aligned to Read button x-coordinate (25, 31)
-        self.root.after(300, self.position_obd_and_plot_buttons)
+        # Position OBD/Plot buttons and fit PEMS Entry width to Select button x
+        self.root.after(300, self.position_obd_plot_and_pems_entry)
+
+        # =========================================================================
+        # OPTIONS/REPORT TAB CONTENTS
+        # =========================================================================
+
+        # 52, 55) Options/Controls and Import folder button (blue font in this tab)
+        self.frame_opts_top = tk.Frame(self.tab_opts, bg="#f3f3f3")
+        self.frame_opts_top.pack(fill="x", padx=20, pady=(15, 5))
+
+        lbl_opt = tk.Label(self.frame_opts_top, text="Options/Controls:", font=self.font_default,
+                           bg="#f3f3f3", fg="#0078d4")
+        lbl_opt.grid(row=0, column=0, sticky="w", padx=(0, 10))
+
+        self.ent_options_dir = tk.Entry(self.frame_opts_top, textvariable=self.options_dir_var, font=self.font_default)
+        self.ent_options_dir.grid(row=0, column=1, sticky="ew", padx=(0, 6))
+
+        self.btn_import_dir = tk.Button(self.frame_opts_top, image=(self.icon_import or self.icon_read),
+                                        command=self.import_folder, bd=0, bg="#f3f3f3",
+                                        activebackground="#e5e5e5", cursor="hand2")
+        self.btn_import_dir.grid(row=0, column=2, sticky="w")
+        self.create_tooltip(self.btn_import_dir, "Import (select a folder)")
+        self.frame_opts_top.columnconfigure(1, weight=1)
+
+        # 53) Options Lists listbox (Excel and .mlx)
+        self.frame_opts_list = tk.Frame(self.tab_opts, bg="#f3f3f3")
+        self.frame_opts_list.pack(fill="x", padx=20, pady=5)
+
+        tk.Label(self.frame_opts_list, text="Options Lists", font=self.font_header,
+                 bg="#f3f3f3", fg="#0078d4").pack(anchor="w")
+
+        opt_container = tk.Frame(self.frame_opts_list, bg="#f3f3f3")
+        opt_container.pack(fill="x")
+        sb_opt = tk.Scrollbar(opt_container, orient="vertical")
+        self.options_listbox = tk.Listbox(opt_container, height=10, font=self.font_default,
+                                          selectmode=tk.SINGLE, yscrollcommand=sb_opt.set,
+                                          exportselection=False, borderwidth=1, relief="solid")
+        self.options_listbox.pack(side="left", fill="both", expand=True)
+        sb_opt.config(command=self.options_listbox.yview)
+        sb_opt.pack(side="right", fill="y")
+        self.options_listbox.bind("<Double-Button-1>", self.open_option_item)
+
+        # 56) Blue solid line between the options_listbox and reportPMS_listbox
+        self.separator_line = tk.Frame(self.tab_opts, bg="#0078d4", height=2)
+        self.separator_line.pack(fill="x", padx=20, pady=(8, 8))
+
+        # 57, 59) Report Format controls (above Report PDF listbox)
+        self.frame_report_fmt = tk.Frame(self.tab_opts, bg="#f3f3f3")
+        self.frame_report_fmt.pack(fill="x", padx=20, pady=(5, 5))
+
+        self.lbl_report_fmt = tk.Label(self.frame_report_fmt, text="Report Format:", font=self.font_default,
+                                       bg="#f3f3f3", fg="#0078d4")
+        self.lbl_report_fmt.grid(row=0, column=0, sticky="w", padx=(0, 10))
+
+        self.ent_report_format = tk.Entry(self.frame_report_fmt, textvariable=self.report_format_path,
+                                          font=self.font_default)
+        self.ent_report_format.grid(row=0, column=1, sticky="ew", padx=(0, 6))
+
+        self.btn_format = tk.Button(self.frame_report_fmt, image=(self.icon_PEMSreport or self.icon_read),
+                                    command=self.select_report_folder, bd=0, bg="#f3f3f3",
+                                    activebackground="#e5e5e5", cursor="hand2")
+        self.btn_format.grid(row=0, column=2, sticky="w")
+        self.create_tooltip(self.btn_format, "Select report format folder")
+        self.frame_report_fmt.columnconfigure(1, weight=1)
+
+        # 54) Report PDF listbox (will list files when clicking Format button per step 57)
+        self.frame_report_list = tk.Frame(self.tab_opts, bg="#f3f3f3")
+        self.frame_report_list.pack(fill="x", padx=20, pady=5)
+
+        tk.Label(self.frame_report_list, text="Report PDF", font=self.font_header,
+                 bg="#f3f3f3", fg="#0078d4").pack(anchor="w")
+
+        rep_container = tk.Frame(self.frame_report_list, bg="#f3f3f3")
+        rep_container.pack(fill="x")
+        sb_rep = tk.Scrollbar(rep_container, orient="vertical")
+        self.reportPMS_listbox = tk.Listbox(rep_container, height=10, font=self.font_default,
+                                            selectmode=tk.SINGLE, yscrollcommand=sb_rep.set,
+                                            exportselection=False, borderwidth=1, relief="solid")
+        self.reportPMS_listbox.pack(side="left", fill="both", expand=True)
+        sb_rep.config(command=self.reportPMS_listbox.yview)
+        sb_rep.pack(side="right", fill="y")
 
     # ---------------------------------------------------------------------
     # Helpers
@@ -508,6 +676,16 @@ class PEMSAnalysisGUI(object):
             draw.line(pts, fill=(255, 255, 255), width=3)
         return ImageTk.PhotoImage(img)
 
+    def load_icon_from_file(self, path, size=(40, 30)):
+        """Load an external icon and resize to match button size."""
+        try:
+            img = Image.open(path).convert("RGBA")
+            img = img.resize(size, Image.LANCZOS)
+            return ImageTk.PhotoImage(img)
+        except Exception as e:
+            print(f"Could not load icon '{path}': {e}")
+            return None
+
     def create_tooltip(self, widget, text):
         def enter(event):
             self.tooltip = tk.Label(self.root, text=text, bg="#ffffe0",
@@ -521,41 +699,50 @@ class PEMSAnalysisGUI(object):
         widget.bind("<Enter>", enter)
         widget.bind("<Leave>", leave)
 
-    def position_obd_and_plot_buttons(self):
+    def position_obd_plot_and_pems_entry(self):
         """
-        Align OBD & Plot button x-coordinates to btn_read.winfo_x().
-        Also make OBD Entry width slightly less than the OBD button x-coordinate.
+        Align OBD & Plot button x-coordinates to btn_select.winfo_x().
+        Make OBD Entry width slightly less than OBD button x.
+        Fit the PEMS entry width tightly before the Select icon.
         """
         try:
             self.root.update_idletasks()
-            read_x_root = self.btn_read.winfo_rootx()
+            read_x_root = self.btn_select.winfo_rootx()
 
-            # Compute positions relative to frames (25, 31)
+            # Place OBD button (30)
             obd_x = read_x_root - self.frame_obd.winfo_rootx()
-            plot_x = read_x_root - self.frame_check_align.winfo_rootx()
-
             try:
                 self.btn_obd.grid_forget()
             except Exception:
                 pass
-            self.btn_obd.place(x=obd_x, y=0)
+            self.btn_obd.place(x=int(obd_x), y=0)
 
+            # Place Plot button (36)
+            plot_x = read_x_root - self.frame_check_align.winfo_rootx()
             try:
                 self.btn_plot.place_forget()
             except Exception:
                 pass
-            self.btn_plot.place(x=plot_x, y=0)
+            self.btn_plot.place(x=int(plot_x), y=0)
 
-            # Adjust OBD Entry width (approximate chars by ~8 px per char) (26)
+            # Adjust OBD Entry width (31)
             entry_x = self.ent_obd.winfo_x()
             px_available = max(obd_x - entry_x - 12, 40)
             width_chars = max(int(px_available / 8), 10)
-            self.ent_obd.config(width=width_chars)
+            self.ent_obd.config(width=int(width_chars))
+
+            # Adjust PEMS Entry width tightly before the Folder button (2)
+            pems_entry_x = self.ent_pems.winfo_x()
+            pems_btn_x = self.btn_select.winfo_x()
+            px_available_pems = max(pems_btn_x - pems_entry_x - 10, 40)
+            width_chars_pems = max(int(px_available_pems / 8), 10)
+            self.ent_pems.config(width=int(width_chars_pems))
+
         except Exception:
-            self.root.after(300, self.position_obd_and_plot_buttons)
+            self.root.after(300, self.position_obd_plot_and_pems_entry)
 
     def toggle_obd_widgets(self, *args):
-        """Enable/Disable OBD widgets based on Alignment Checkbox (21)."""
+        """Enable/Disable OBD widgets based on Alignment Checkbox."""
         is_checked = self.alignment_checked.get()
         state = "normal" if is_checked else "disabled"
         self.ent_obd.config(state=state)
@@ -563,7 +750,7 @@ class PEMSAnalysisGUI(object):
         self.check_alignment_input_state()
 
     def check_alignment_input_state(self, *args):
-        """Enable align input entry only if Alignment is checked AND OBD file selected (28)."""
+        """Enable align input entry only if Alignment is checked AND OBD file selected."""
         if self.alignment_checked.get() and self.obd_file_path.get().strip():
             self.ent_align_input.config(state="normal")
         else:
@@ -571,53 +758,63 @@ class PEMSAnalysisGUI(object):
         self.update_plot_button_state()
 
     def update_plot_button_state(self, *args):
-        """Enable Plot button only when align_values_var is not empty (29)."""
+        """Enable Plot button only when align_values_var is not empty."""
         if self.align_values_var.get().strip():
             self.btn_plot.config(state="normal")
         else:
             self.btn_plot.config(state="disabled")
 
     def update_selected_columns_list(self, event=None):
-        """Maintain the selected_columns_list based on user selections (14)."""
-        # Read currently displayed items
+        """Maintain the selected_columns_list based on user selections."""
         items = self.columns_listbox.get(0, tk.END)
         selected_idxs = self.columns_listbox.curselection()
         current_selected = [items[i] for i in selected_idxs]
-
-        # When list is displayed, update the cache to reflect selections
         self.selected_columns_list = list(current_selected)
 
     def refresh_columns_listbox(self, *args):
-        """Refresh columns_listbox based on the pre_selected_columns checkbox (14)."""
-        # Clear existing items
-        self.columns_listbox.delete(0, tk.END)
-
+        """Refresh columns_listbox based on the pre_selected_columns checkbox."""
+        self.columns_listbox.delete(0, tk.END)  # 15) Empty before refresh
         if self.pre_selected_columns_var.get():
-            # Show only the user-selected display columns and select them
             for i, col in enumerate(self.selected_columns_list):
                 self.columns_listbox.insert(tk.END, col)
                 self.columns_listbox.selection_set(i)
         else:
-            # Show full columns_row and then select any that match selected_columns_list
             if self.columns_row is not None:
                 for col in self.columns_row:
                     self.columns_listbox.insert(tk.END, str(col))
-                # Select matches
                 list_items = self.columns_listbox.get(0, tk.END)
                 for idx, item in enumerate(list_items):
                     if item in self.selected_columns_list:
                         self.columns_listbox.selection_set(idx)
 
     # ---------------------------------------------------------------------
-    # File dialogs
+    # File dialogs and external reads
     # ---------------------------------------------------------------------
     def select_pems_file(self):
         file = filedialog.askopenfilename(title="Select PEMS File", filetypes=[("CSV", "*.csv")])
         if file:
             self.pems_file_path.set(file)
+            self.read_file()
+
+    def select_report_folder(self):
+        """57) Select a folder directory and list Excel and .mlx files in the Report PDF listbox."""
+        folder = filedialog.askdirectory(title="Select Report Format Folder")
+        if not folder:
+            return
+        self.report_format_path.set(folder)
+
+        # Clear and list Excel and .mlx files in reportPMS_listbox
+        self.reportPMS_listbox.delete(0, tk.END)
+        try:
+            files = sorted(os.listdir(folder))
+            for f in files:
+                if f.lower().endswith((".xlsx", ".xls", ".mlx")):
+                    self.reportPMS_listbox.insert(tk.END, f)
+        except Exception as e:
+            messagebox.showerror("Report Format", f"Failed to list files:\n{e}")
 
     def select_obd_file(self):
-        """Read OBD/HEMDATA CSV and prepare its DataFrame, summary, and eTIME (22-24)."""
+        """Read OBD/HEMDATA CSV and prepare its DataFrame, summary, and eTIME."""
         file = filedialog.askopenfilename(title="Select OBD File", filetypes=[("CSV", "*.csv")])
         if not file:
             return
@@ -627,49 +824,39 @@ class PEMSAnalysisGUI(object):
         self.obd_df_summary = None
 
         try:
-            # Read OBD CSV
             tmp = pd.read_csv(file, encoding='utf-8', low_memory=False, skiprows=0, header=0)
 
-            # Remove 'Not Available' / 'Unnamed' columns
+            # Remove 'Not Available' / 'Unnamed' columns (24)
             tmp = tmp.loc[:, ~tmp.columns.str.contains("Not Available|Unnamed", case=False, na=False)]
 
-            # 22) Insert eTIME label rows if not present BEFORE header assignment in step 23
+            # Ensure eTIME after reading (from TIME if available) (25)
+            tmp = ensure_eTIME(tmp)
+
+            # 26) Insert eTIME label rows BEFORE slicing if missing
             if 'eTIME' not in tmp.columns:
                 tmp.insert(1, 'eTIME', None)
                 tmp.loc[0, 'eTIME'] = 'eTIME'
                 tmp.loc[1, 'eTIME'] = 's'
 
-            # 23) Assign header rows (local to OBD), then slice data
-            obd_columns_row = tmp.columns
-            obd_vars_row = tmp.loc[0, :]
-            obd_units_row = tmp.loc[1, :]
-
-            # Rename columns to variable headers and slice out data rows
-            tmp.columns = obd_vars_row
-
-            # 24) Extract summary & data blocks using "Summary Information:" in first column
+            # 28) Before assigning rows, create summary starting from "Summary Information:"
             try:
                 first_col = tmp.columns[0]
                 summary_row_idx = pd.Index(tmp[first_col]).get_loc("Summary Information:")
-
-                # I. Save summary
                 self.obd_df_summary = tmp.loc[summary_row_idx:, :].copy()
                 self.obd_df_summary.to_csv("obd_df_summary.csv", index=False, header=False)
-
-                # II. Data up to (summary_row_idx - 1)
+                # Data rows between header rows and summary (28)
                 tmp = tmp.loc[2:summary_row_idx-1, :].copy()
             except Exception:
-                # If no summary section, use all data
+                # No summary region found; keep data rows from 2 onward (27)
                 tmp = tmp.loc[2:, :].copy()
 
-            # Clean and filter SAMPLE rows if present
+            # 27) Clean and filter SAMPLE rows if present
             tmp.dropna(how='all', inplace=True)
             if 'sSTATUS_PATH' in tmp.columns:
                 tmp = tmp.loc[tmp['sSTATUS_PATH'] == 'SAMPLE', :].copy()
-
             tmp.reset_index(drop=True, inplace=True)
 
-            # Ensure eTIME (seconds) for OBD
+            # Ensure eTIME is numeric for sliced tmp
             tmp = ensure_eTIME(tmp)
 
             self.obd_df = tmp
@@ -678,78 +865,111 @@ class PEMSAnalysisGUI(object):
             messagebox.showerror("OBD Read Error", f"Failed to read OBD file:\n{e}")
             self.obd_df = None
 
-        # Update alignment input state
         self.check_alignment_input_state()
+
+    def import_folder(self):
+        """Select a folder and list Excel and .mlx files in options_listbox."""
+        folder = filedialog.askdirectory(title="Select Options Folder")
+        if not folder:
+            return
+        self.options_dir_var.set(folder)
+
+        # List Excel and .mlx files
+        self.options_listbox.delete(0, tk.END)
+        try:
+            files = sorted(os.listdir(folder))
+            for f in files:
+                if f.lower().endswith((".xlsx", ".xls", ".mlx")):
+                    self.options_listbox.insert(tk.END, f)
+        except Exception as e:
+            messagebox.showerror("Options Import", f"Failed to list files:\n{e}")
+
+    def open_option_item(self, event):
+        """Double-click to open Excel (.xlsx/.xls) 'Settings' sheet if name contains RDE_Settings_, or read .mlx."""
+        sel = self.options_listbox.curselection()
+        if not sel:
+            return
+        item = self.options_listbox.get(sel[0])
+        folder = self.options_dir_var.get()
+        path = os.path.join(folder, item)
+        try:
+            if item.lower().endswith((".xlsx", ".xls")) and ("rde_settings_" in item.lower()):
+                self.df_options = pd.read_excel(path, sheet_name="Settings")
+                messagebox.showinfo("Options", f"Loaded 'Settings' sheet from:\n{item}")
+            elif item.lower().endswith(".mlx"):
+                self.df_options = read_mlx_content(path)
+                messagebox.showinfo("Options", f"Selected MATLAB live script:\n{item}")
+            else:
+                messagebox.showinfo("Options", f"Selected file:\n{item}")
+        except Exception as e:
+            messagebox.showerror("Options Open Error", f"Failed to open:\n{e}")
 
     # ---------------------------------------------------------------------
     # Reading and UI population
     # ---------------------------------------------------------------------
     def read_file(self):
         """
-        Read the selected PEMS CSV:
-        - Use pd.read_csv(... encoding='utf-8', low_memory=False, skiprows=0, header=0).
-        - Remove 'Not Available' / 'Unnamed' columns.
-        - Ensure eTIME label rows (5) and eTIME seconds creation from sTIME (4).
-        - Assign header rows (6).
-        - Build df_summary from 'Summary Information:' (46).
-        - Populate columns listbox and pre-select specified columns (10, 12).
+        Read the selected PEMS CSV with required processing:
+        - pd.read_csv(... encoding='utf-8', low_memory=False, skiprows=0, header=0)
+        - Remove 'Not Available' / 'Unnamed'
+        - Ensure eTIME in seconds from TIME using ensure_eTIME()
+        - Insert eTIME labels if missing (rows 0 & 1)
+        - Assign columns_row, vars_row, units_row; then slice data rows (2:)
+        - Create df_summary from 'Summary Information:' and save
+        - Slice data rows (2:summary-1) if summary exists
+        - Populate columns_listbox and pre-select requested columns
         """
         path = self.pems_file_path.get()
         if not path:
             messagebox.showwarning("Warning", "Please select a PEMS file first.")
             return
 
-        # 12) Empty the listbox before reading
+        # 15) Empty listbox before reading
         self.columns_listbox.delete(0, tk.END)
 
         try:
-            # Read CSV exactly as specified (1)
             self.df = pd.read_csv(path, encoding='utf-8', low_memory=False, skiprows=0, header=0)
 
-            # Remove columns with "Not Available" or "Unnamed" (3)
+            # 3) Remove columns with "Not Available" or "Unnamed"
             self.df = self.df.loc[:, ~self.df.columns.str.contains("Not Available|Unnamed", case=False, na=False)]
 
-            # 5) Insert eTIME label rows if not present
+            # 4) Ensure eTIME based on TIME after reading
+            self.df = ensure_eTIME(self.df)
+
+            # 5) Insert eTIME labels if not present BEFORE assigning rows
             if 'eTIME' not in self.df.columns:
                 self.df.insert(1, 'eTIME', None)
                 self.df.loc[0, 'eTIME'] = 'eTIME'
                 self.df.loc[1, 'eTIME'] = 's'
 
-            # 6) Assign header rows
+            # 6) Assign rows and slice data rows (do NOT rename columns here)
             self.columns_row = self.df.columns
             self.vars_row = self.df.loc[0, :]
             self.units_row = self.df.loc[1, :]
 
-            # Rename columns to variable headers and slice out data rows
-            self.df.columns = self.vars_row
-
-            # 46) Create df_summary and slice main df using "Summary Information:"
-            first_col = self.df.columns[0]
+            # 7-9) Extract summary starting from "Summary Information:"
             try:
+                first_col = self.df.columns[0]
                 summary_row_idx = pd.Index(self.df[first_col]).get_loc("Summary Information:")
-                # Save df_summary
                 self.df_summary = self.df.loc[summary_row_idx:, :].copy()
                 self.df_summary.to_csv("pems_df_summary.csv", index=False, header=False)
-                # Create df from rows 2 to summary_row_idx - 1
+                # Data rows between headers and summary (9)
                 self.df = self.df.loc[2:summary_row_idx-1, :].copy()
             except Exception:
-                # If summary row not found, just slice data rows
+                # No summary found; slice from row 2 onward
                 self.df_summary = pd.DataFrame()
                 self.df = self.df.loc[2:, :].copy()
 
-            # Drop fully empty rows
+            # Clean and filter SAMPLE rows if present
             self.df.dropna(how='all', inplace=True)
-
-            # Keep SAMPLE rows if the column exists
             if 'sSTATUS_PATH' in self.df.columns:
                 self.df = self.df.loc[self.df['sSTATUS_PATH'] == 'SAMPLE', :].copy()
-
             self.df.reset_index(drop=True, inplace=True)
 
-            # 4) Ensure eTIME in seconds (from sTIME) after reading and slicing
+            # Ensure sliced df has numeric eTIME
             self.df = ensure_eTIME(self.df)
 
-            # 10) Populate columns_listbox and pre-select pre_select_columns
+            # 13) Populate Data Fields listbox and select pre_select_columns
             available_cols = list(self.columns_row) if self.columns_row is not None else []
             self.selected_columns_list = [c for c in self.pre_select_columns if c in available_cols]
 
@@ -774,16 +994,14 @@ class PEMSAnalysisGUI(object):
     def check_alignment(self):
         """
         Callback for Check Alignment button:
-        - Use selected item in align_listbox to determine align column
-        - Map via self.align_map
-        - Call plot_check_alignment(...) per spec (34, 35)
+        - Use selected item in align_listbox directly as align_col (step 58)
+        - Call plot_check_alignment(...)
         """
         selected_indices = self.align_listbox.curselection()
         selected_value = self.align_listbox.get(selected_indices[0]) if selected_indices else None
         print(f"Executing check_alignment() with: {[selected_value] if selected_value else []}")
 
-        # Map friendly label to data column
-        align_col = self.align_map.get(selected_value, selected_value) if selected_value else None
+        align_col = selected_value if selected_value else None
 
         self.plot_check_alignment(
             self.ent_pems.get(),
@@ -794,15 +1012,14 @@ class PEMSAnalysisGUI(object):
 
     def check_alignment_view(self):
         """
-        36 & 38) Call plot_alignment with file paths, the selected align column label (mapped),
-        and the align_values entry (treated as time shift if numeric, or as column name if non-numeric).
+        Call plot_alignment with file paths, the selected align column (direct),
+        and the align_values entry (offset or column name).
         """
         selected_indices = self.align_listbox.curselection()
         selected_value = self.align_listbox.get(selected_indices[0]) if selected_indices else None
         print(f"Executing check_alignment_view() with: {[selected_value] if selected_value else []}")
 
-        # Map friendly label to data column
-        align_col = self.align_map.get(selected_value, selected_value) if selected_value else None
+        align_col = selected_value if selected_value else None
 
         self.plot_alignment(
             self.ent_pems.get(),
@@ -813,7 +1030,7 @@ class PEMSAnalysisGUI(object):
 
     def plot_check_alignment(self, pems_path, obd_path, pems_df, align_col):
         """
-        35) Check/Plot Alignment logic with ImageDistanceMeasurer and provided conditional code.
+        Check/Plot Alignment logic with ImageDistanceMeasurer and the provided conditional code.
         """
         if pems_df is None or pems_df.empty:
             messagebox.showwarning("Warning", "Please read a PEMS file before plotting alignment.")
@@ -844,8 +1061,9 @@ class PEMSAnalysisGUI(object):
             else:
                 notes.append(f"'{align_col}' not found in OBD data.")
 
-        # 35) Provided snippet logic
-        if plt.get_fignums(): plt.close('all')
+        # 40) Close any open figures before opening the interactive window
+        if plt.get_fignums():
+            plt.close('all')
         ImageDistanceMeasurer(pems_df, self.data_to_align, align_col)
 
         if notes:
@@ -853,10 +1071,10 @@ class PEMSAnalysisGUI(object):
 
     def plot_alignment(self, pems_path, obd_path, align_col, align_values_str=None):
         """
-        32, 36, 38) Plot alignment.
+        Plot alignment:
         - If align_values_str is numeric, interpret as time offset (seconds) applied to PEMS X.
         - If align_values_str is non-numeric and not empty, treat it as a column name to plot instead of align_col.
-        Plots the selected/typed column in both PEMS (self.df) and OBD (self.obd_df).
+        Plots df[self.align_values_var.get()] in the selected PEMS/OBD data frames, per step 43.
         """
         if self.df is None or self.df.empty:
             messagebox.showwarning("Warning", "Please read a PEMS file before plotting alignment.")
@@ -864,20 +1082,18 @@ class PEMSAnalysisGUI(object):
 
         typed_col = (align_col or "").strip()
 
-        # Decide how to interpret align_values_str
         offset_seconds = 0.0
         if align_values_str and align_values_str.strip():
             s = align_values_str.strip()
             try:
                 offset_seconds = float(s)  # numeric -> shift
             except Exception:
-                typed_col = s  # non-numeric -> use as column name to plot
+                typed_col = s  # non-numeric -> use as column name
 
         if not typed_col:
-            # Fallback to listbox selection if nothing provided
             selected_indices = self.align_listbox.curselection()
             selected_value = self.align_listbox.get(selected_indices[0]) if selected_indices else None
-            typed_col = self.align_map.get(selected_value, selected_value if selected_value else "")
+            typed_col = (selected_value or "").strip()
 
         if not typed_col:
             messagebox.showinfo("Info", "Please select an item from Time Alignment or enter a column name.")
@@ -940,7 +1156,6 @@ class PEMSAnalysisGUI(object):
         ax2 = fig.add_subplot(212)
         idx = 0
         for x_vals, y_vals, label in self.data_to_align:
-            # Shift only the first series (PEMS) by offset_seconds for visualization
             if idx == 0:
                 ax2.plot(x_vals + offset_seconds, y_vals, label=label, linewidth=1)
             else:
@@ -964,7 +1179,7 @@ class PEMSAnalysisGUI(object):
     # ---------------------------------------------------------------------
     def run_analysis(self):
         """
-        Callback for RUN Button: keep current behavior and add required prints (44).
+        Callback for RUN Button: keep current behavior and add required prints.
         """
         print("--- RUN ANALYSIS ---")
         print(f"OBD Entry Widget Object: {self.ent_obd}")
@@ -979,7 +1194,7 @@ class PEMSAnalysisGUI(object):
         print(f"Check Alignment Button Object: {self.btn_check_align}")
         print(f"Align Values Textbox Content: '{self.align_values_var.get()}'")
 
-        # 44) Print index of 'Vehicle Speed' (or iVEH_SPEED) in df.columns if exists
+        # Print index of 'Vehicle Speed' in df.columns if exists (49)
         if self.df is not None:
             col_name = None
             if 'Vehicle Speed' in self.df.columns:
@@ -993,7 +1208,7 @@ class PEMSAnalysisGUI(object):
                 except Exception as e:
                     print(f"Error finding index of '{col_name}': {e}")
             else:
-                print("'Vehicle Speed' (or mapped 'iVEH_SPEED') not found in DataFrame columns.")
+                print("'Vehicle Speed' (or 'iVEH_SPEED') not found in DataFrame columns.")
         else:
             print("DataFrame not loaded.")
 
