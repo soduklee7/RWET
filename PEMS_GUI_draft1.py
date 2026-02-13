@@ -154,6 +154,144 @@ def ensure_eTIME(df_local):
             pass
     return df_local
 
+import matplotlib.pyplot as plt
+
+class PlotManager:
+    def __init__(self, fig, ax):
+        self.fig = fig
+        self.ax = ax
+        self.base_scale = 1.1
+        
+        # Panning state
+        self.pressed = False
+        self.xpress = None
+        self.ypress = None
+
+        # Connect Zoom and Key Events
+        self.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
+        self.fig.canvas.mpl_connect('key_press_event', self.on_key)
+        
+        # Connect Panning Events
+        self.fig.canvas.mpl_connect('button_press_event', self.on_press)
+        self.fig.canvas.mpl_connect('motion_notify_event', self.on_motion)
+        self.fig.canvas.mpl_connect('button_release_event', self.on_release)
+
+    # --- PANNING LOGIC ---
+    def on_press(self, event):
+        if event.inaxes != self.ax: return
+        self.pressed = True
+        self.xpress, self.ypress = event.xdata, event.ydata
+
+    def on_motion(self, event):
+        if not self.pressed or event.inaxes != self.ax: return
+        
+        # Calculate how far we've moved
+        dx = event.xdata - self.xpress
+        dy = event.ydata - self.ypress
+        
+        # Shift the current limits by the delta
+        cur_xlim = self.ax.get_xlim()
+        cur_ylim = self.ax.get_ylim()
+        
+        self.ax.set_xlim(cur_xlim[0] - dx, cur_xlim[1] - dx)
+        self.ax.set_ylim(cur_ylim[0] - dy, cur_ylim[1] - dy)
+        self.fig.canvas.draw_idle()
+
+    def on_release(self, event):
+        self.pressed = False
+
+    # --- ZOOM LOGIC (Scroll & Keys) ---
+    def on_scroll(self, event):
+        if event.inaxes != self.ax: return
+        scale_factor = 1 / self.base_scale if event.button == 'up' else self.base_scale
+        self._apply_zoom(scale_factor, event.xdata, event.ydata)
+
+    def on_key(self, event):
+        if 'ctrl+' in event.key:
+            if '+' in event.key or '=' in event.key:
+                self._apply_zoom(1 / self.base_scale)
+            elif '-' in event.key:
+                self._apply_zoom(self.base_scale)
+
+    def _apply_zoom(self, scale_factor, x_center=None, y_center=None):
+        cur_xlim, cur_ylim = self.ax.get_xlim(), self.ax.get_ylim()
+        if x_center is None:
+            x_center, y_center = sum(cur_xlim)/2, sum(cur_ylim)/2
+
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+        rel_x, rel_y = (cur_xlim[1]-x_center)/(cur_xlim[1]-cur_xlim[0]), (cur_ylim[1]-y_center)/(cur_ylim[1]-cur_ylim[0])
+
+        self.ax.set_xlim([x_center - new_width * (1-rel_x), x_center + new_width * rel_x])
+        self.ax.set_ylim([y_center - new_height * (1-rel_y), y_center + new_height * rel_y])
+        self.fig.canvas.draw_idle()
+
+# Run the Plot
+# fig, ax = plt.subplots()
+# ax.plot(range(50), [x**0.5 for x in range(50)], label="Square Root")
+# pm = PlotManager(fig, ax)
+# plt.show()
+
+class ZoomManager:
+    def __init__(self, fig, ax):
+        self.fig = fig
+        self.ax = ax
+        self.base_scale = 1.1  # Zoom intensity
+        
+        # Connect the events
+        self.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
+        self.fig.canvas.mpl_connect('key_press_event', self.on_key)
+
+    def on_scroll(self, event):
+        # Ensure the mouse is over the axes
+        if event.inaxes != self.ax:
+            return
+        
+        # Determine zoom direction
+        if event.button == 'up':
+            scale_factor = 1 / self.base_scale
+        elif event.button == 'down':
+            scale_factor = self.base_scale
+        else:
+            scale_factor = 1
+
+        self._apply_zoom(scale_factor, event.xdata, event.ydata)
+
+    def on_key(self, event):
+        # Standard Matplotlib key strings for + and -
+        # Note: 'ctrl+=' is often the result of Ctrl and +
+        if 'ctrl+' in event.key:
+            if '+' in event.key or '=' in event.key:
+                self._apply_zoom(1 / self.base_scale)
+            elif '-' in event.key:
+                self._apply_zoom(self.base_scale)
+
+    def _apply_zoom(self, scale_factor, x_center=None, y_center=None):
+        cur_xlim = self.ax.get_xlim()
+        cur_ylim = self.ax.get_ylim()
+
+        # If no specific center (like keyboard zoom), use the middle of the view
+        if x_center is None:
+            x_center = (cur_xlim[0] + cur_xlim[1]) / 2
+            y_center = (cur_ylim[0] + cur_ylim[1]) / 2
+
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+
+        # Calculate new limits based on the center point
+        rel_x = (cur_xlim[1] - x_center) / (cur_xlim[1] - cur_xlim[0])
+        rel_y = (cur_ylim[1] - y_center) / (cur_ylim[1] - cur_ylim[0])
+
+        self.ax.set_xlim([x_center - new_width * (1 - rel_x), x_center + new_width * rel_x])
+        self.ax.set_ylim([y_center - new_height * (1 - rel_y), y_center + new_height * rel_y])
+        self.fig.canvas.draw_idle()
+
+# # Usage
+# fig, ax = plt.subplots()
+# ax.plot(range(10), [x**2 for x in range(10)])
+# zm = ZoomManager(fig, ax)
+# plt.show()
+
 class ImageDistanceMeasurer:
     """
     Interactive panel to click twice and measure horizontal & vertical pixel distances
@@ -180,11 +318,16 @@ class ImageDistanceMeasurer:
         self.elements = []
 
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        zm = ZoomManager(self.fig, self.ax)
+        # pm = PlotManager(self.fig, self.ax)
         plt.show()
 
     def onclick(self, event):
         if event.inaxes != self.ax:
             return
+            # Stop listening for this specific event
+            self.fig.canvas.mpl_disconnect(self.cid)
+            self.cid = None # Good practice to clear the reference
         if len(self.points) == 2:
             self.clear_previous()
 
