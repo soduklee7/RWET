@@ -3,6 +3,9 @@ from tkinter import ttk, filedialog, messagebox
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from PIL import Image, ImageTk, ImageDraw
 import os
@@ -12,7 +15,7 @@ import os
 # I have included mock classes/functions below so this code runs standalone for testing.
 # In your actual environment, ensure 'PEMS_GUI_AI5.py' is in the same directory.
 try:
-    from PEMS_GUI_AI5 import ensure_eTIME, get_time_axis, ZoomManager, ImageDistanceMeasurer, read_m_file_to_df, read_mlx_content
+    from PEMS_GUI_utils import ensure_eTIME, get_time_axis, ZoomManager, ImageDistanceMeasurer, read_m_file_to_df, read_mlx_content
 except ImportError:
     # Mocks for demonstration if file is missing
     def ensure_eTIME(df):
@@ -64,6 +67,7 @@ class PEMSAnalysisGUI(object):
         
         # Default Font
         self.default_font = ("Arial", 14)
+        self.big_font = ("Arial", 30, "bold")
         self.root.option_add("*Font", self.default_font)
 
         # 1) Create Icons
@@ -544,30 +548,50 @@ class PEMSAnalysisGUI(object):
         align_col = self.align_listbox.get(sel_idx)
 
         # 40) Close figures
-        if plt.get_fignums(): plt.close('all')
+        # if plt.get_fignums(): plt.close('all')
 
-        # Logic to plot
-        fig, ax = plt.subplots(figsize=(10, 6))
+        # # Logic to plot
+        # fig, ax = plt.subplots(figsize=(19.2, 10.8))
         
-        # Plot PEMS
+        # # Plot PEMS
+        # if align_col in self.df.columns:
+        #     ax.plot(self.df['eTIME'], pd.to_numeric(self.df[align_col], errors='coerce'), label=f"PEMS {align_col}")
+        
+        # # Plot OBD
+        # if not self.obd_df.empty and align_col in self.obd_df.columns:
+        #     ax.plot(self.obd_df['eTIME'], pd.to_numeric(self.obd_df[align_col], errors='coerce'), '--', label=f"OBD {align_col}")
+
+        # ax.legend()
+        # ax.set_xlabel("Time (s)")
+        # ax.set_ylabel(align_col)
+        # ax.set_title(f"Alignment Check: {align_col}")
+
+        data_to_align = []
+        notes = []
+
+        # PEMS series
         if align_col in self.df.columns:
-            ax.plot(self.df['eTIME'], pd.to_numeric(self.df[align_col], errors='coerce'), label=f"PEMS {align_col}")
-        
-        # Plot OBD
-        if not self.obd_df.empty and align_col in self.obd_df.columns:
-            ax.plot(self.obd_df['eTIME'], pd.to_numeric(self.obd_df[align_col], errors='coerce'), label=f"OBD {align_col}")
+            x_pems = self.df['eTIME']
+            y_pems = pd.to_numeric(self.df[align_col], errors='coerce')
+            data_to_align.append((x_pems, y_pems, "PEMS"))
+        else:
+            notes.append(f"'{align_col}' not found in PEMS data.")
 
-        ax.legend()
-        ax.set_xlabel("Time (s)")
-        ax.set_ylabel(align_col)
-        ax.set_title(f"Alignment Check: {align_col}")
+        # OBD series (if loaded)
+        if self.obd_df is not None and not self.obd_df.empty:
+            if align_col in self.obd_df.columns:
+                x_obd = self.obd_df['eTIME']
+                y_obd = pd.to_numeric(self.obd_df[align_col], errors='coerce')
+                data_to_align.append((x_obd, y_obd, "OBD"))
+            else:
+                notes.append(f"'{align_col}' not found in OBD data.")
+
 
         # 40) Call ImageDistanceMeasurer + Zoom
         # Assuming these classes attach to the axes/figure
-        _ = ImageDistanceMeasurer(ax)
-        _ = ZoomManager(ax)
-
-        plt.show()
+        ImageDistanceMeasurer(data_to_align, align_col)
+        # zm = ZoomManager(plt.gcf())
+        # plt.show()
 
     def check_alignment_view(self):
         # 41) Callback for btn_plot
@@ -589,11 +613,6 @@ class PEMSAnalysisGUI(object):
         
         if plt.get_fignums(): plt.close('all')
         
-        fig, ax = plt.subplots()
-        
-        if align_col in pems_df.columns:
-            ax.plot(pems_df['eTIME'], pd.to_numeric(pems_df[align_col], errors='coerce'), label="PEMS")
-        
         if not obd_df.empty and align_col in obd_df.columns:
             # Apply offset if exists in ent_align_input (Basic implementation)
             offset = 0
@@ -602,11 +621,83 @@ class PEMSAnalysisGUI(object):
             except ValueError:
                 pass
             
-            # Assuming eTIME adjustment for alignment
-            ax.plot(obd_df['eTIME'] + offset, pd.to_numeric(obd_df[align_col], errors='coerce'), label="OBD")
+        # fig, ax = plt.subplots(figsize=(13.66, 7.68))
+        # if align_col in pems_df.columns:
+        #     ax.plot(pems_df['eTIME'] + offset, pd.to_numeric(pems_df[align_col], errors='coerce'), label="PEMS")
+        #     # Assuming eTIME adjustment for alignment
+        #     ax.plot(obd_df['eTIME'], pd.to_numeric(obd_df[align_col], errors='coerce'), '--', label="OBD")
 
-        ax.legend()
-        plt.show()
+        # ax.legend()
+        # plt.show()
+        
+        data_to_align = []
+        notes = []
+
+        # PEMS series
+        if align_col in pems_df.columns:
+            x_pems = pems_df['eTIME']
+            y_pems = pd.to_numeric(pems_df[align_col], errors='coerce')
+            data_to_align.append((x_pems, y_pems, "PEMS"))
+        else:
+            notes.append(f"'{align_col}' not found in PEMS data.")
+
+        # OBD series (if loaded)
+        if self.obd_df is not None and not self.obd_df.empty:
+            if align_col in self.obd_df.columns:
+                x_obd = self.obd_df['eTIME']
+                y_obd = pd.to_numeric(self.obd_df[align_col], errors='coerce')
+                data_to_align.append((x_obd, y_obd, "OBD"))
+            else:
+                notes.append(f"'{align_col}' not found in OBD data.")
+
+        # Destroy prior plot window (if any)
+        if hasattr(self, 'plot_top') and self.plot_top and self.plot_top.winfo_exists():
+            try:
+                self.plot_top.destroy()
+            except Exception:
+                pass
+
+        self.plot_top = tk.Toplevel(self.root)
+        # self.plot_top.title(f"Alignment Plot - {align_col}")
+        # self.plot_top.geometry("1366x768")
+        
+        fig = Figure(figsize=(13.66, 7.68), dpi=100)
+        ax1 = fig.add_subplot(211)
+
+        idx = 0
+        for x_vals, y_vals, label in data_to_align:
+            if idx == 0:
+                ax1.plot(x_vals, y_vals, label=label, linewidth=1)
+            else:
+                ax1.plot(x_vals, y_vals, '--', label=label, linewidth=1)
+            idx += 1
+        ax1.set_ylabel(align_col)
+        ax1.set_title(f"Alignment: {align_col}")
+        ax1.grid(True, linestyle="--", alpha=0.4)
+        ax1.legend(loc="upper left")
+        ax1.set_xticks([])
+
+        ax2 = fig.add_subplot(212)
+        idx = 0
+        for x_vals, y_vals, label in data_to_align:
+            if idx == 0:
+                ax2.plot(x_vals + offset, y_vals, label=label, linewidth=1)
+            else:
+                ax2.plot(x_vals, y_vals, '--', label=label, linewidth=1)
+            idx += 1
+        ax2.set_xlabel("Time (s)" if 'eTIME' in self.df.columns else "Index")
+        ax2.set_ylabel(align_col)
+        ax2.grid(True, linestyle="--", alpha=0.4)
+
+        fig.tight_layout(pad=2.0)
+
+        if notes:
+            messagebox.showinfo("Notes", "Notes:\n- " + "\n- ".join(notes))
+
+        canvas = FigureCanvasTkAgg(fig, master=self.plot_top)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True)
+
 
     def run_analysis(self):
         # 49) Print status

@@ -34,7 +34,7 @@ if 'eTIME' not in tmp.columns:
 tmp.insert(1, 'eTIME', None)
 tmp.loc[0, 'eTIME'] = 'eTIME'
 tmp.loc[1, 'eTIME'] = 's'
-27)	Assign columns_row = tmp.columns, vars_row = tmp.loc[0, :] and units_row = tmp.loc[1, :]. Update tmp = tmp.loc[2:, :]. Remove all NaN rows using tmp.dropna(how='all', inplace=True) and filter only tmp['sSTATUS_PATH'] == 'SAMPLE' rows.
+27)	Assign columns_row = tmp.columns, vars_row = tmp.loc[0, :] and units_row = tmp.loc[1, :]. Update tmp = tmp.loc[2:, :]. Remove all NaN rows using tmp.dropna(how='all', inplace=True) and filter only tmp['Gas Path'] == 'SAMPLE' rows.
 28)	Create self.obd_df_summary data frame starting from the row that contains the "Summary Information:" in the first column of tmp data frame using the summary_row_idx = pd.Index(tmp[first_col]).get_loc("Summary Information:") in the “select_obd_file” function.
 Create self.obd_df = tmp.loc[2:summary_row_idx-1, :].copy()
 29)	Save self.obd_df_summary using self.obd_df_summary.to_csv(). 
@@ -326,6 +326,47 @@ class ImageDistanceMeasurer:
             except Exception:
                 pass
         self.markers, self.elements = [], []
+
+# ---------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------
+def create_icon(self, icon_type, fill_color, border_color, text_color="black"):
+    """Generates a simple 40x30 icon in-memory using Pillow."""
+    w, h = 40, 30
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    draw.rectangle((0, 0, w-1, h-1), fill=fill_color, outline=border_color, width=2)
+
+    if icon_type == "Folder":
+        draw.rectangle((5, 8, w-5, h-8), outline="#555", width=1)
+        draw.line((5, 8, 15, 8), fill="#555", width=1)
+    elif icon_type == "Read":
+        for y in [8, 14, 20]:
+            draw.line((8, y, w-8, y), fill=text_color, width=2)
+    elif icon_type == "Truck":
+        draw.rectangle((5, 10, 25, 22), fill="#333")
+        draw.rectangle((25, 14, 34, 22), fill="#333")
+        draw.ellipse((8, 20, 14, 26), fill="black")
+        draw.ellipse((24, 20, 30, 26), fill="black")
+    elif icon_type == "Figure":
+        col = (154, 92, 230)
+        draw.rounded_rectangle([w*0.08, h*0.12, w*0.92, h*0.88], radius=6, fill=col)
+        draw.line([(w*0.18, h*0.78), (w*0.85, h*0.78)], fill=(255, 255, 255), width=2)
+        draw.line([(w*0.18, h*0.25), (w*0.18, h*0.78)], fill=(255, 255, 255), width=2)
+        pts = [(w*0.18, h*0.70), (w*0.30, h*0.55), (w*0.38, h*0.60),
+                (w*0.50, h*0.40), (w*0.62, h*0.48), (w*0.74, h*0.35), (w*0.85, h*0.42)]
+        draw.line(pts, fill=(255, 255, 255), width=3)
+    return ImageTk.PhotoImage(img)
+
+def load_icon_from_file(self, path, size=(40, 30)):
+    """Load an external icon and resize to match button size."""
+    try:
+        img = Image.open(path).convert("RGBA")
+        img = img.resize(size, Image.LANCZOS)
+        return ImageTk.PhotoImage(img)
+    except Exception as e:
+        print(f"Could not load icon '{path}': {e}")
+        return None
 
 # -------------------------------------------------------------------------
 # Main GUI Class
@@ -886,8 +927,8 @@ class PEMSAnalysisGUI(object):
 
             # 27) Clean and filter SAMPLE rows if present
             tmp.dropna(how='all', inplace=True)
-            if 'sSTATUS_PATH' in tmp.columns:
-                tmp = tmp.loc[tmp['sSTATUS_PATH'] == 'SAMPLE', :].copy()
+            if 'Gas Path' in tmp.columns:
+                tmp = tmp.loc[tmp['Gas Path'] == 'SAMPLE', :].copy()
             tmp.reset_index(drop=True, inplace=True)
 
             # Ensure eTIME is numeric for sliced tmp
@@ -1000,8 +1041,8 @@ class PEMSAnalysisGUI(object):
 
             # Clean and filter SAMPLE rows if present
             self.df.dropna(how='all', inplace=True)
-            if 'sSTATUS_PATH' in self.df.columns:
-                self.df = self.df.loc[self.df['sSTATUS_PATH'] == 'SAMPLE', :].copy()
+            if 'Gas Path' in self.df.columns:
+                self.df = self.df.loc[self.df['Gas Path'] == 'SAMPLE', :].copy()
             self.df.reset_index(drop=True, inplace=True)
 
             # Ensure sliced df has numeric eTIME
