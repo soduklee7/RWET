@@ -116,6 +116,77 @@ import os
 
 import pandas as pd
 
+        # self.icon_folder = self.create_icon("Folder", "#ffe680", "#E8B931")
+        # self.icon_read = self.create_icon("Read", "#ffffff", "#0078d4", text_color="#0078d4")
+        # self.icon_truck = self.create_icon("Truck", "#73ec8e", "#107c10")
+        # self.icon_figure = self.create_icon("Figure", "#73ec8e", "#107c10")
+        # self.icon_import = self.create_icon("import", "#B4FFB4", "#146414", text_color="#32C832", size=(40, 30))
+        # self.icon_PEMSreport = self.create_icon("PEMSreport", "#FFFFFF", "#2850A0", text_color="#2850A0", size=(40, 30))
+        # self.icon_Folder24 = self.create_icon("Folder24", "#FFFCD2", "#825F19", text_color="#D7AA46",size=(40, 30))
+        # # self.icon_format = self.create_icon("icons/import.png", size=(40, 30))
+               
+        # # self.icon_PEMSreport = self.load_icon_from_file("icons/PEMSreport.png", size=(40, 30))
+        # # self.icon_Folder24 = self.load_icon_from_file("icons/Folder_24.png", size=(40, 30))
+        # # self.icon_format = self.load_icon_from_file("icons/import.png", size=(40, 30))
+
+def create_icon(icon_type, fill_color, border_color, text_color="black", size=(40, 30)):
+    """Generates a simple 40x30 icon in-memory using Pillow."""
+    w, h = size
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    draw.rectangle((0, 0, w-1, h-1), fill=fill_color, outline=border_color, width=2)
+
+    if icon_type == "Folder":
+        draw.rectangle((5, 8, w-5, h-8), outline="#555", width=1)
+        draw.line((5, 8, 15, 8), fill="#555", width=1)
+    elif icon_type == "Read":
+        for y in [8, 14, 20]:
+            draw.line((8, y, w-8, y), fill=text_color, width=2)
+    elif icon_type == "Truck":
+        draw.rectangle((5, 10, 25, 22), fill="#333")
+        draw.rectangle((25, 14, 34, 22), fill="#333")
+        draw.ellipse((8, 20, 14, 26), fill="black")
+        draw.ellipse((24, 20, 30, 26), fill="black")
+    elif icon_type == "Figure":
+        col = (154, 92, 230)
+        draw.rounded_rectangle([w*0.08, h*0.12, w*0.92, h*0.88], radius=6, fill=col)
+        draw.line([(w*0.18, h*0.78), (w*0.85, h*0.78)], fill=(255, 255, 255), width=2)
+        draw.line([(w*0.18, h*0.25), (w*0.18, h*0.78)], fill=(255, 255, 255), width=2)
+        pts = [(w*0.18, h*0.70), (w*0.30, h*0.55), (w*0.38, h*0.60),
+                (w*0.50, h*0.40), (w*0.62, h*0.48), (w*0.74, h*0.35), (w*0.85, h*0.42)]
+        draw.line(pts, fill=(255, 255, 255), width=3)
+    if icon_type == "Folder24":
+        # Folder Back & Tab
+        draw.rectangle([4, 4, 15, 10], fill=fill_color, outline=border_color)
+        draw.rectangle([4, 8, 36, 26], fill=fill_color, outline=border_color)
+        # Folder Front (slightly offset for 3D effect)
+        draw.rectangle([6, 12, 36, 26], fill=fill_color, outline=border_color)
+
+    elif icon_type == "PEMSreport":
+        # Paper Shape with dog-ear fold
+        x0, y0, x1, y1 = 8, 4, 32, 26
+        fold = 6
+        shape = [(x0, y0), (x1-fold, y0), (x1, y0+fold), (x1, y1), (x0, y1)]
+        draw.polygon(shape, fill=fill_color, outline=border_color)
+        # Folded corner triangle
+        draw.polygon([(x1-fold, y0), (x1-fold, y0+fold), (x1, y0+fold)], fill=fill_color, outline=border_color)
+        # Text lines using 'text_color'
+        for i, y_off in enumerate(range(12, 24, 4)):
+            draw.line([(x0+4, y_off), (x1-4, y_off)], fill=text_color, width=1)
+
+    elif icon_type == "import":
+        # The Box/Tray at bottom
+        draw.rectangle([6, 18, 34, 26], fill=fill_color, outline=border_color)
+        # The Arrow pointing down
+        # Shaft
+        draw.rectangle([16, 4, 24, 14], fill=text_color, outline=border_color)
+        # Head
+        draw.polygon([(10, 14), (30, 14), (20, 22)], fill=text_color, outline=border_color)
+
+    # return img
+    return ImageTk.PhotoImage(img)
+
+
 def read_m_file_to_df(file_path):
     data = []
     

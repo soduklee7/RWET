@@ -10,6 +10,13 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from PIL import Image, ImageTk, ImageDraw
 import os
 
+# pip install psycopg2 mysql-connector-python
+# pyinstaller --onefile --windowed --hidden-import=tkinter PEMS_GUI_AI7.py --exclude-module PyQt5 --exclude-module PySide6 
+# pyinstaller --onefile --windowed --icon=your_icon.ico your_script_name.py
+# pyinstaller --hidden-import=tkinter your_script_name.py
+# pip install --upgrade PyInstaller pyinstaller-hooks-contrib
+# pyinstaller your_script.py --exclude-module PyQt5 --exclude-module PySide6
+
 # --- Requested Import ---
 # Note: Since I am an AI, I cannot access your local file 'PEMS_GUI_AI5.py'.
 # I have included mock classes/functions below so this code runs standalone for testing.
@@ -76,10 +83,14 @@ class PEMSAnalysisGUI(object):
         self.icon_read = self.create_icon("Read", "#ffffff", "#0078d4", text_color="#0078d4")
         self.icon_truck = self.create_icon("Truck", "#73ec8e", "#107c10")
         self.icon_figure = self.create_icon("Figure", "#73ec8e", "#107c10")
-        self.icon_import = self.load_icon_from_file("icons/import.png", size=(40, 30))
-        self.icon_PEMSreport = self.load_icon_from_file("icons/PEMSreport.png", size=(40, 30))
-        self.icon_Folder24 = self.load_icon_from_file("icons/Folder_24.png", size=(40, 30))
-        self.icon_format = self.load_icon_from_file("icons/import.png", size=(40, 30))
+        self.icon_import = self.create_icon("import", "#B4FFB4", "#146414", text_color="#32C832", size=(40, 30))
+        self.icon_PEMSreport = self.create_icon("PEMSreport", "#FFFFFF", "#2850A0", text_color="#2850A0", size=(40, 30))
+        self.icon_Folder24 = self.create_icon("Folder24", "#FFFCD2", "#825F19", text_color="#D7AA46",size=(40, 30))
+        self.icon_format = self.icon_read # self.create_icon("icons/import.png", size=(40, 30))
+               
+        # self.icon_PEMSreport = self.load_icon_from_file("icons/PEMSreport.png", size=(40, 30))
+        # self.icon_Folder24 = self.load_icon_from_file("icons/Folder_24.png", size=(40, 30))
+        # self.icon_format = self.load_icon_from_file("icons/import.png", size=(40, 30))
         # Variables
         self.input_file_dir_checked = tk.BooleanVar()
         self.alignment_checked = tk.BooleanVar()
@@ -112,9 +123,9 @@ class PEMSAnalysisGUI(object):
     # ---------------------------------------------------------------------
     # Helpers
     # ---------------------------------------------------------------------
-    def create_icon(self, icon_type, fill_color, border_color, text_color="black"):
+    def create_icon(self, icon_type, fill_color, border_color, text_color="black", size=(40, 30)):
         """Generates a simple 40x30 icon in-memory using Pillow."""
-        w, h = 40, 30
+        w, h = size
         img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         draw.rectangle((0, 0, w-1, h-1), fill=fill_color, outline=border_color, width=2)
@@ -138,6 +149,35 @@ class PEMSAnalysisGUI(object):
             pts = [(w*0.18, h*0.70), (w*0.30, h*0.55), (w*0.38, h*0.60),
                    (w*0.50, h*0.40), (w*0.62, h*0.48), (w*0.74, h*0.35), (w*0.85, h*0.42)]
             draw.line(pts, fill=(255, 255, 255), width=3)
+        if icon_type == "Folder24":
+            # Folder Back & Tab
+            draw.rectangle([4, 4, 15, 10], fill=fill_color, outline=border_color)
+            draw.rectangle([4, 8, 36, 26], fill=fill_color, outline=border_color)
+            # Folder Front (slightly offset for 3D effect)
+            draw.rectangle([6, 12, 36, 26], fill=fill_color, outline=border_color)
+
+        elif icon_type == "PEMSreport":
+            # Paper Shape with dog-ear fold
+            x0, y0, x1, y1 = 8, 4, 32, 26
+            fold = 6
+            shape = [(x0, y0), (x1-fold, y0), (x1, y0+fold), (x1, y1), (x0, y1)]
+            draw.polygon(shape, fill=fill_color, outline=border_color)
+            # Folded corner triangle
+            draw.polygon([(x1-fold, y0), (x1-fold, y0+fold), (x1, y0+fold)], fill=fill_color, outline=border_color)
+            # Text lines using 'text_color'
+            for i, y_off in enumerate(range(12, 24, 4)):
+                draw.line([(x0+4, y_off), (x1-4, y_off)], fill=text_color, width=1)
+
+        elif icon_type == "import":
+            # The Box/Tray at bottom
+            draw.rectangle([6, 18, 34, 26], fill=fill_color, outline=border_color)
+            # The Arrow pointing down
+            # Shaft
+            draw.rectangle([16, 4, 24, 14], fill=text_color, outline=border_color)
+            # Head
+            draw.polygon([(10, 14), (30, 14), (20, 22)], fill=text_color, outline=border_color)
+
+        # return img
         return ImageTk.PhotoImage(img)
 
     # def create_icons(self):
@@ -328,7 +368,8 @@ class PEMSAnalysisGUI(object):
         self.ent_options_dir = tk.Entry(frame_opt_top)
         self.ent_options_dir.pack(side="left", fill="x", expand=True, padx=5)
 
-        self.btn_import = tk.Button(frame_opt_top, text="Import", image=self.icon_import, compound="left",
+        # self.btn_import = tk.Button(frame_opt_top, text="Import", image=self.icon_import, compound="left",
+        self.btn_import = tk.Button(frame_opt_top, image=self.icon_import, compound="left",
                                     command=self.import_options_folder)
         self.btn_import.pack(side="left")
 
@@ -355,7 +396,7 @@ class PEMSAnalysisGUI(object):
         self.ent_report_format = tk.Entry(frame_rep_fmt)
         self.ent_report_format.pack(side="left", fill="x", expand=True, padx=5)
 
-        self.btn_format = tk.Button(frame_rep_fmt, image=self.icon_format, command=self.load_report_formats)
+        self.btn_format = tk.Button(frame_rep_fmt, image=self.icon_read, command=self.load_report_formats)
         self.btn_format.pack(side="left")
 
         # 54) Report PDF Listbox
