@@ -1,5 +1,5 @@
 Update Mac-style, colorful, 3-D-looking 600x700 size 2-tabs which have the "Main" and "Options/Report" in the PEMSAnalysisGUI(object) GUI using tkinter, pillow icons, and default font size 14, and the Python code here.
-1) Add "from PEMS_GUI_AI5 import ensure_eTIME, get_time_axis, ZoomManager, ImageDistanceMeasurer read_m_file_to_df read_mlx_content" to the code.
+1) Add "from PEMS_GUI_utils import ensure_eTIME, IconFactory, get_time_axis, ZoomManager, ImageDistanceMeasurer, read_m_file_to_df, read_mlx_content".
 Without loading a '.png' file for icons, create the "create_icons" method to create the 40x40 size "folder", "truck", "plot", "import" and "format: icons using Pillow and call the method in the __init__ function.
 1) Create a text box with a "PEMS File" label and the "Select" button to select a CSV file in the "Main" tab. 
 Display the "Press a PEMS button to select a PEMS file" when placing a mouse pointer on the "PEMS File" text box. 

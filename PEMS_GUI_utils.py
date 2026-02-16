@@ -114,79 +114,128 @@ import matplotlib.pyplot as plt
 # import matlab.engine
 import os
 
-import pandas as pd
-
-        # self.icon_folder = self.create_icon("Folder", "#ffe680", "#E8B931")
-        # self.icon_read = self.create_icon("Read", "#ffffff", "#0078d4", text_color="#0078d4")
-        # self.icon_truck = self.create_icon("Truck", "#73ec8e", "#107c10")
-        # self.icon_figure = self.create_icon("Figure", "#73ec8e", "#107c10")
-        # self.icon_import = self.create_icon("import", "#B4FFB4", "#146414", text_color="#32C832", size=(40, 30))
-        # self.icon_PEMSreport = self.create_icon("PEMSreport", "#FFFFFF", "#2850A0", text_color="#2850A0", size=(40, 30))
-        # self.icon_Folder24 = self.create_icon("Folder24", "#FFFCD2", "#825F19", text_color="#D7AA46",size=(40, 30))
-        # # self.icon_format = self.create_icon("icons/import.png", size=(40, 30))
-               
+import pandas as pd             
         # # self.icon_PEMSreport = self.load_icon_from_file("icons/PEMSreport.png", size=(40, 30))
         # # self.icon_Folder24 = self.load_icon_from_file("icons/Folder_24.png", size=(40, 30))
         # # self.icon_format = self.load_icon_from_file("icons/import.png", size=(40, 30))
 
-def create_icon(icon_type, fill_color, border_color, text_color="black", size=(40, 30)):
-    """Generates a simple 40x30 icon in-memory using Pillow."""
-    w, h = size
-    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-    draw.rectangle((0, 0, w-1, h-1), fill=fill_color, outline=border_color, width=2)
+from PIL import Image, ImageDraw
 
-    if icon_type == "Folder":
-        draw.rectangle((5, 8, w-5, h-8), outline="#555", width=1)
-        draw.line((5, 8, 15, 8), fill="#555", width=1)
-    elif icon_type == "Read":
-        for y in [8, 14, 20]:
-            draw.line((8, y, w-8, y), fill=text_color, width=2)
-    elif icon_type == "Truck":
-        draw.rectangle((5, 10, 25, 22), fill="#333")
-        draw.rectangle((25, 14, 34, 22), fill="#333")
-        draw.ellipse((8, 20, 14, 26), fill="black")
-        draw.ellipse((24, 20, 30, 26), fill="black")
-    elif icon_type == "Figure":
-        col = (154, 92, 230)
-        draw.rounded_rectangle([w*0.08, h*0.12, w*0.92, h*0.88], radius=6, fill=col)
-        draw.line([(w*0.18, h*0.78), (w*0.85, h*0.78)], fill=(255, 255, 255), width=2)
-        draw.line([(w*0.18, h*0.25), (w*0.18, h*0.78)], fill=(255, 255, 255), width=2)
-        pts = [(w*0.18, h*0.70), (w*0.30, h*0.55), (w*0.38, h*0.60),
-                (w*0.50, h*0.40), (w*0.62, h*0.48), (w*0.74, h*0.35), (w*0.85, h*0.42)]
-        draw.line(pts, fill=(255, 255, 255), width=3)
-    if icon_type == "Folder24":
-        # Folder Back & Tab
-        draw.rectangle([4, 4, 15, 10], fill=fill_color, outline=border_color)
-        draw.rectangle([4, 8, 36, 26], fill=fill_color, outline=border_color)
-        # Folder Front (slightly offset for 3D effect)
-        draw.rectangle([6, 12, 36, 26], fill=fill_color, outline=border_color)
+class IconFactory:
+    def __init__(self, icon_size=(40, 30)):
+        # Configuration based on attached image properties
+        self.size = icon_size
+        
+        # Color palettes
+        self.colors = {
+            "Folder":  {"fill": "#ffe680", "border": "#E8B931", "text": "#D7AA46"},
+            "Read":  {"fill": "#ffffff", "border": "#0078d4", "text": "#0078d4"},
+            "Truck":  {"fill": "#73ec8e", "border": "#107c10", "text": "#D7AA46"},
+            "Figure":  {"fill": "#73ec8e", "border": "#107c10", "text": "#D7AA46"},
+            "Folder_24":  {"fill": "#FFFCE4", "border": "#825F19", "text": "#D7AA46"},
+            "import":     {"fill": "#FFFFFF", "border": "#404040", "text": "#32C832"},
+            "PEMSreport": {"fill": "#FFFFFF", "border": "#2850A0", "text": "#2850A0"},
+            "PDFreport":  {"fill": "#FFFFFF", "border": "#E02020", "text": "#E02020"} # Red for PDF
+        }
 
-    elif icon_type == "PEMSreport":
-        # Paper Shape with dog-ear fold
-        x0, y0, x1, y1 = 8, 4, 32, 26
-        fold = 6
-        shape = [(x0, y0), (x1-fold, y0), (x1, y0+fold), (x1, y1), (x0, y1)]
-        draw.polygon(shape, fill=fill_color, outline=border_color)
-        # Folded corner triangle
-        draw.polygon([(x1-fold, y0), (x1-fold, y0+fold), (x1, y0+fold)], fill=fill_color, outline=border_color)
-        # Text lines using 'text_color'
-        for i, y_off in enumerate(range(12, 24, 4)):
-            draw.line([(x0+4, y_off), (x1-4, y_off)], fill=text_color, width=1)
+        # Initialize and return the attributes
+        (self.icon_Folder, self.icon_Read, self.icon_Truck, self.icon_Figure, self.icon_Folder_24, 
+         self.icon_import, self.icon_PEMSreport, self.icon_PDFreport) = self.generate_all_icons()
 
-    elif icon_type == "import":
-        # The Box/Tray at bottom
-        draw.rectangle([6, 18, 34, 26], fill=fill_color, outline=border_color)
-        # The Arrow pointing down
-        # Shaft
-        draw.rectangle([16, 4, 24, 14], fill=text_color, outline=border_color)
-        # Head
-        draw.polygon([(10, 14), (30, 14), (20, 22)], fill=text_color, outline=border_color)
+    def generate_all_icons(self):
+        """Generates the icons and returns the specific self attributes."""
+        # Creating icons using the identified color codes
+        f = self.colors["Folder"]
+        self.icon_Folder = self.create_icon("Folder", f["fill"], f["border"], f["text"], self.size)
 
-    # return img
-    return ImageTk.PhotoImage(img)
+        f = self.colors["Read"]
+        self.icon_Read = self.create_icon("Read", f["fill"], f["border"], f["text"], self.size)
 
+        f = self.colors["Truck"]
+        self.icon_Truck = self.create_icon("Truck", f["fill"], f["border"], f["text"], self.size)
 
+        f = self.colors["Figure"]
+        self.icon_Figure = self.create_icon("Figure", f["fill"], f["border"], f["text"], self.size)
+
+        f = self.colors["Folder_24"]
+        self.icon_Folder_24 = self.create_icon("Folder_24", f["fill"], f["border"], f["text"], self.size)
+        
+        i = self.colors["import"]
+        self.icon_import = self.create_icon("import", i["fill"], i["border"], i["text"], self.size)
+        
+        r = self.colors["PEMSreport"]
+        self.icon_PEMSreport = self.create_icon("PEMSreport", r["fill"], r["border"], r["text"], self.size)
+        
+        p = self.colors["PDFreport"]
+        self.icon_PDFreport = self.create_icon("PDFreport", p["fill"], p["border"], p["text"], self.size)
+        
+        return self.icon_Folder, self.icon_Read, self.icon_Truck, self.icon_Figure, self.icon_Folder_24, self.icon_import, self.icon_PEMSreport, self.icon_PDFreport
+
+    def create_icon(self, icon_type, fill_color, border_color, text_color, size):
+        """Procedurally draws icons without loading .png files."""
+        print(f"Icon: {icon_type} | Fill: {fill_color} | Border: {border_color} | Detail: {text_color} | Size: {size}")
+        
+        img = Image.new("RGBA", size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+        w, h = size
+
+        if icon_type == "Folder":
+            draw.rectangle((5, 8, w-5, h-8), outline="#555", width=1)
+            draw.line((5, 8, 15, 8), fill="#555", width=1)
+        elif icon_type == "Read":
+            for y in [8, 14, 20]:
+                draw.line((8, y, w-8, y), fill=text_color, width=2)
+        elif icon_type == "Truck":
+            draw.rectangle((5, 10, 25, 22), fill="#333")
+            draw.rectangle((25, 14, 34, 22), fill="#333")
+            draw.ellipse((8, 20, 14, 26), fill="black")
+            draw.ellipse((24, 20, 30, 26), fill="black")
+        elif icon_type == "Figure":
+            col = (154, 92, 230)
+            draw.rounded_rectangle([w*0.08, h*0.12, w*0.92, h*0.88], radius=6, fill=col)
+            draw.line([(w*0.18, h*0.78), (w*0.85, h*0.78)], fill=(255, 255, 255), width=2)
+            draw.line([(w*0.18, h*0.25), (w*0.18, h*0.78)], fill=(255, 255, 255), width=2)
+            pts = [(w*0.18, h*0.70), (w*0.30, h*0.55), (w*0.38, h*0.60),
+                    (w*0.50, h*0.40), (w*0.62, h*0.48), (w*0.74, h*0.35), (w*0.85, h*0.42)]
+            draw.line(pts, fill=(255, 255, 255), width=3)
+        elif icon_type == "Folder_24":
+            # Folder Back & Tab
+            draw.rectangle([4, 4, 15, 8], fill=text_color, outline=border_color) 
+            draw.rectangle([4, 7, 34, 24], fill=text_color, outline=border_color)
+            # Front face
+            draw.rectangle([4, 11, 34, 24], fill=fill_color, outline=border_color)
+
+        elif icon_type in ["PEMSreport", "PDFreport"]:
+                # Paper body with dog-ear
+                coords = [(10, 2), (24, 2), (30, 8), (30, 26), (10, 26)]
+                draw.polygon(coords, fill=fill_color, outline=border_color)
+                # Lines representing data
+                for y in range(12, 24, 4):
+                    draw.line([(14, y), (26, y)], fill=text_color, width=1)
+                
+                # Additional visual cue for PDF: a small rectangle at bottom
+                if icon_type == "PDFreport":
+                    draw.rectangle([13, 19, 27, 23], fill=text_color)
+        elif icon_type == "import":
+            draw.rectangle([6, 18, 34, 26], fill=fill_color, outline=border_color)
+            draw.rectangle([17, 4, 23, 14], fill=text_color, outline=border_color)
+            draw.polygon([(12, 14), (28, 14), (20, 21)], fill=text_color, outline=border_color)
+
+        return ImageTk.PhotoImage(img) # img
+
+        # icon_size = (36, 36)        
+        # factory = IconFactory(icon_size)        
+        self.icon_folder = factory.icon_Folder_24 # factory.icon_Folder
+        self.icon_read = factory.icon_Read
+        self.icon_truck = factory.icon_Truck
+        self.icon_figure = factory.icon_Figure
+        self.icon_format = self.icon_read
+
+        self.icon_Folder24 = factory.icon_Folder_24
+        self.icon_import = factory.icon_import
+        self.icon_PEMSreport = factory.icon_PEMSreport
+        self.icon_PDFreport = factory.icon_PDFreport
+        
 def read_m_file_to_df(file_path):
     data = []
     
@@ -202,10 +251,47 @@ def read_m_file_to_df(file_path):
                 parts = line.split('=', 1)
                 key = parts[0].strip()
                 value = parts[1].strip().split(';', 1)[0] # Remove MATLAB semicolons
-                data.append({'Variable': key, 'Value': value})
+                comments = parts[1].strip().split(';', 1)[1] if len(parts[1].strip().split(';', 1)) > 1 else ""
+                comments = comments.strip().split('% ', 1)[1] if len(comments.strip().split('% ', 1)) > 1 else comments.strip()
+                group = ''
+                if 'pems' in key.lower():
+                    group = 'PEMS'
+                elif 'sd' in key.lower():
+                    group = 'SD'
+                elif 'bins' in key.lower():
+                    group = 'Bins'
+                elif 'log' in key.lower():
+                    group = 'Log'
+                elif 'import' in key.lower():
+                    group = 'Import'
+                elif 'dyno' in key.lower():
+                    group = 'Dyno'
+                elif 'sensors' in key.lower():
+                    group = 'Sensors'
+                elif 'trace' in key.lower():
+                    group = 'Trace'
+                elif 'gps' in key.lower():
+                    group = 'GPS'
+                elif 'can' in key.lower():
+                    group = 'CAN'
+                elif 'fuel' in key.lower():
+                    group = 'Fuel'
+                elif 'display' in key.lower():
+                    group = 'Display'
+                elif 'none' in key.lower():
+                    group = 'None'
+                else:
+                    group = 'Other'  
+                
+                data.append({'Variable': key, 'Value': value, 'Comments': comments, 'Group': group})
                 
     # Create the DataFrame
     df = pd.DataFrame(data)
+
+    # substring_to_remove = "udo.log."
+    # df['Variable'] = df['Variable'].str.replace(substring_to_remove, '', regex=False)
+    # df['Variable'] = df['Variable'].removeprefix(substring_to_remove)
+    
     return df
 
 # Usage
@@ -397,37 +483,6 @@ class ImageDistanceMeasurer:
             except Exception:
                 pass
         self.markers, self.elements = [], []
-
-# ---------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------
-def create_icon(icon_type, fill_color, border_color, text_color="black"):
-    """Generates a simple 40x30 icon in-memory using Pillow."""
-    w, h = 40, 30
-    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-    draw.rectangle((0, 0, w-1, h-1), fill=fill_color, outline=border_color, width=2)
-
-    if icon_type == "Folder":
-        draw.rectangle((5, 8, w-5, h-8), outline="#555", width=1)
-        draw.line((5, 8, 15, 8), fill="#555", width=1)
-    elif icon_type == "Read":
-        for y in [8, 14, 20]:
-            draw.line((8, y, w-8, y), fill=text_color, width=2)
-    elif icon_type == "Truck":
-        draw.rectangle((5, 10, 25, 22), fill="#333")
-        draw.rectangle((25, 14, 34, 22), fill="#333")
-        draw.ellipse((8, 20, 14, 26), fill="black")
-        draw.ellipse((24, 20, 30, 26), fill="black")
-    elif icon_type == "Figure":
-        col = (154, 92, 230)
-        draw.rounded_rectangle([w*0.08, h*0.12, w*0.92, h*0.88], radius=6, fill=col)
-        draw.line([(w*0.18, h*0.78), (w*0.85, h*0.78)], fill=(255, 255, 255), width=2)
-        draw.line([(w*0.18, h*0.25), (w*0.18, h*0.78)], fill=(255, 255, 255), width=2)
-        pts = [(w*0.18, h*0.70), (w*0.30, h*0.55), (w*0.38, h*0.60),
-                (w*0.50, h*0.40), (w*0.62, h*0.48), (w*0.74, h*0.35), (w*0.85, h*0.42)]
-        draw.line(pts, fill=(255, 255, 255), width=3)
-    return ImageTk.PhotoImage(img)
 
 def load_icon_from_file(path, size=(40, 30)):
     """Load an external icon and resize to match button size."""

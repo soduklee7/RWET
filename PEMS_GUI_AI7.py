@@ -13,16 +13,12 @@ import os
 # pip install psycopg2 mysql-connector-python
 # pyinstaller --onefile --windowed --hidden-import=tkinter PEMS_GUI_AI7.py --exclude-module PyQt5 --exclude-module PySide6 
 # pyinstaller --onefile --windowed --icon=your_icon.ico your_script_name.py
-# pyinstaller --hidden-import=tkinter your_script_name.py
+# pyinstaller --onefile --hidden-import=tkinter your_script_name.py
 # pip install --upgrade PyInstaller pyinstaller-hooks-contrib
-# pyinstaller your_script.py --exclude-module PyQt5 --exclude-module PySide6
 
 # --- Requested Import ---
-# Note: Since I am an AI, I cannot access your local file 'PEMS_GUI_AI5.py'.
-# I have included mock classes/functions below so this code runs standalone for testing.
-# In your actual environment, ensure 'PEMS_GUI_AI5.py' is in the same directory.
 try:
-    from PEMS_GUI_utils import ensure_eTIME, get_time_axis, ZoomManager, ImageDistanceMeasurer, read_m_file_to_df, read_mlx_content
+    from PEMS_GUI_utils import ensure_eTIME, IconFactory, get_time_axis, ImageDistanceMeasurer, read_m_file_to_df, read_mlx_content
 except ImportError:
     # Mocks for demonstration if file is missing
     def ensure_eTIME(df):
@@ -30,8 +26,6 @@ except ImportError:
         df['eTIME'] = np.arange(len(df))
         return df
     def get_time_axis(df): return df['eTIME']
-    class ZoomManager:
-        def __init__(self, ax, base_scale=1.1): pass
     class ImageDistanceMeasurer:
         def __init__(self, ax): pass
     def read_m_file_to_df(path): return pd.DataFrame([["M File Content"]], columns=["Data"])
@@ -77,20 +71,19 @@ class PEMSAnalysisGUI(object):
         self.big_font = ("Arial", 30, "bold")
         self.root.option_add("*Font", self.default_font)
 
-        # 1) Create Icons
-        # self.create_icons()
-        self.icon_folder = self.create_icon("Folder", "#ffe680", "#E8B931")
-        self.icon_read = self.create_icon("Read", "#ffffff", "#0078d4", text_color="#0078d4")
-        self.icon_truck = self.create_icon("Truck", "#73ec8e", "#107c10")
-        self.icon_figure = self.create_icon("Figure", "#73ec8e", "#107c10")
-        self.icon_import = self.create_icon("import", "#B4FFB4", "#146414", text_color="#32C832", size=(40, 30))
-        self.icon_PEMSreport = self.create_icon("PEMSreport", "#FFFFFF", "#2850A0", text_color="#2850A0", size=(40, 30))
-        self.icon_Folder24 = self.create_icon("Folder24", "#FFFCD2", "#825F19", text_color="#D7AA46",size=(40, 30))
-        self.icon_format = self.icon_read # self.create_icon("icons/import.png", size=(40, 30))
-               
-        # self.icon_PEMSreport = self.load_icon_from_file("icons/PEMSreport.png", size=(40, 30))
-        # self.icon_Folder24 = self.load_icon_from_file("icons/Folder_24.png", size=(40, 30))
-        # self.icon_format = self.load_icon_from_file("icons/import.png", size=(40, 30))
+        icon_size = (36, 36)        
+        factory = IconFactory(icon_size)        
+        self.icon_folder = factory.icon_Folder_24 # factory.icon_Folder
+        self.icon_read = factory.icon_Read
+        self.icon_truck = factory.icon_Truck
+        self.icon_figure = factory.icon_Figure
+        self.icon_format = self.icon_read
+
+        self.icon_Folder24 = factory.icon_Folder_24
+        self.icon_import = factory.icon_import
+        self.icon_PEMSreport = factory.icon_PEMSreport
+        self.icon_PDFreport = factory.icon_PDFreport
+
         # Variables
         self.input_file_dir_checked = tk.BooleanVar()
         self.alignment_checked = tk.BooleanVar()
@@ -123,7 +116,7 @@ class PEMSAnalysisGUI(object):
     # ---------------------------------------------------------------------
     # Helpers
     # ---------------------------------------------------------------------
-    def create_icon(self, icon_type, fill_color, border_color, text_color="black", size=(40, 30)):
+    def create_icon(self, icon_type, fill_color, border_color, text_color="black", size=(36, 36)):
         """Generates a simple 40x30 icon in-memory using Pillow."""
         w, h = size
         img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
@@ -179,49 +172,6 @@ class PEMSAnalysisGUI(object):
 
         # return img
         return ImageTk.PhotoImage(img)
-
-    # def create_icons(self):
-    #     """Creates 40x40 icons using Pillow without loading external files."""
-    #     def make_base(color):
-    #         img = Image.new('RGB', (40, 40), color='white')
-    #         return img, ImageDraw.Draw(img)
-
-    #     # Folder Icon
-    #     img, draw = make_base('white')
-    #     draw.rectangle([5, 10, 35, 30], fill='#FFCC00', outline='black')
-    #     draw.polygon([(5, 10), (15, 10), (18, 5), (28, 5), (35, 10)], fill='#FFCC00', outline='black')
-    #     self.icon_folder = ImageTk.PhotoImage(img)
-
-    #     # Truck Icon
-    #     img, draw = make_base('white')
-    #     draw.rectangle([5, 15, 25, 30], fill='blue', outline='black') # Cab
-    #     draw.rectangle([25, 5, 38, 30], fill='grey', outline='black') # Trailer
-    #     draw.ellipse([8, 28, 15, 35], fill='black') # Wheel
-    #     draw.ellipse([28, 28, 35, 35], fill='black') # Wheel
-    #     self.icon_truck = ImageTk.PhotoImage(img)
-
-    #     # Plot Icon
-    #     img, draw = make_base('white')
-    #     draw.line([5, 35, 35, 35], fill='black', width=2) # X axis
-    #     draw.line([5, 5, 5, 35], fill='black', width=2)   # Y axis
-    #     draw.line([5, 30, 15, 10, 25, 25, 35, 5], fill='red', width=2)
-    #     self.icon_figure = ImageTk.PhotoImage(img)
-    #     self.btn_plot_icon = self.icon_figure # Alias
-
-    #     # Import Icon (Arrow)
-    #     img, draw = make_base('white')
-    #     draw.rectangle([10, 15, 30, 35], outline='black', width=2)
-    #     draw.line([20, 5, 20, 25], fill='green', width=3)
-    #     draw.polygon([(15, 20), (25, 20), (20, 25)], fill='green')
-    #     self.icon_import = ImageTk.PhotoImage(img)
-
-    #     # Format Icon (Doc/Sheet)
-    #     img, draw = make_base('white')
-    #     draw.rectangle([8, 5, 32, 35], outline='blue', width=2)
-    #     draw.line([12, 10, 28, 10], fill='blue', width=1)
-    #     draw.line([12, 15, 28, 15], fill='blue', width=1)
-    #     draw.line([12, 20, 28, 20], fill='blue', width=1)
-    #     self.icon_format = ImageTk.PhotoImage(img)
 
     def load_icon_from_file(self, path, size=(40, 30)):
         """Load an external icon and resize to match button size."""
@@ -396,7 +346,7 @@ class PEMSAnalysisGUI(object):
         self.ent_report_format = tk.Entry(frame_rep_fmt)
         self.ent_report_format.pack(side="left", fill="x", expand=True, padx=5)
 
-        self.btn_format = tk.Button(frame_rep_fmt, image=self.icon_read, command=self.load_report_formats)
+        self.btn_format = tk.Button(frame_rep_fmt, image=self.icon_PDFreport, command=self.load_report_formats)
         self.btn_format.pack(side="left")
 
         # 54) Report PDF Listbox
@@ -789,10 +739,10 @@ class PEMSAnalysisGUI(object):
 
         elif filename.endswith('.m'):
             df_m = read_m_file_to_df(path)
-            df_m.to_csv(path + ".csv")
+            df_m.to_csv(path.replace('.m', '.csv'), index=False)  # Save to CSV for verification
         elif filename.endswith('.mlx'):
             df_mlx = read_mlx_content(path)
-            df_mlx.to_csv(path + ".csv")
+            df_mlx.to_csv(path.replace('.mlx', '.csv'), index=False)  # Save to CSV for verification
 
     def load_report_formats(self):
         # 57) Same directory logic or specific one? Assuming ask directory or use existing
