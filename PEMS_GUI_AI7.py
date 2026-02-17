@@ -18,7 +18,7 @@ import os
 
 # --- Requested Import ---
 try:
-    from PEMS_GUI_utils import ensure_eTIME, IconFactory, get_time_axis, ImageDistanceMeasurer, read_m_file_to_df, read_mlx_content
+    from PEMS_GUI_utils import ensure_eTIME, IconFactory, ImageDistanceMeasurer, read_m_file_to_df, read_mlx_content
 except ImportError:
     # Mocks for demonstration if file is missing
     def ensure_eTIME(df):
@@ -67,10 +67,13 @@ class PEMSAnalysisGUI(object):
         self.root.geometry("600x700")
         
         # Default Font
-        self.default_font = ("Arial", 14)
-        self.big_font = ("Arial", 30, "bold")
+        self.default_font = ("Arial", 12)
+        self.big_bold_font = ("Arial", 20, "bold")
         self.root.option_add("*Font", self.default_font)
-
+        # self.default_font = ("Segoe UI", 12)
+        # self.big_bold_font = ("Segoe UI", 20, "bold")
+        self.tabs_bold_font = ("Arial", 12, "bold")
+        
         icon_size = (36, 36)        
         factory = IconFactory(icon_size)        
         self.icon_folder = factory.icon_Folder_24 # factory.icon_Folder
@@ -96,18 +99,29 @@ class PEMSAnalysisGUI(object):
         self.df_options = pd.DataFrame()
         self.selected_columns_list = []
 
-        # Tabs Setup
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure("TNotebook.Tab", font=self.tabs_bold_font, foreground="blue")
+        
         self.tab_control = ttk.Notebook(root)
         self.tab_main = ttk.Frame(self.tab_control)
         self.tab_options = ttk.Frame(self.tab_control)
-        
-        # Style for Options tab
-        style = ttk.Style()
-        style.configure("Blue.TLabel", foreground="blue", font=("Arial", 12, "bold"))
-        
+
         self.tab_control.add(self.tab_main, text='Main')
         self.tab_control.add(self.tab_options, text='Options/Report')
         self.tab_control.pack(expand=1, fill="both")
+        # Tabs Setup
+        # self.tab_control = ttk.Notebook(root)
+        # self.tab_main = ttk.Frame(self.tab_control)
+        # self.tab_options = ttk.Frame(self.tab_control)
+        
+        # # Style for Options tab
+        # style = ttk.Style()
+        # style.configure("Blue.TLabel", foreground="blue", font=("Arial", 12, "bold"))
+        
+        # self.tab_control.add(self.tab_main, text='Main')
+        # self.tab_control.add(self.tab_options, text='Options/Report')
+        # self.tab_control.pack(expand=1, fill="both")
 
         # --- Build Tabs ---
         self.setup_main_tab()
@@ -248,8 +262,17 @@ class PEMSAnalysisGUI(object):
         frame_format_list = tk.Frame(frame_lists_container)
         frame_format_list.pack(side="left", fill="both", expand=True, padx=(5, 0))
         tk.Label(frame_format_list, text="Data Format").pack(anchor="w")
-        self.format_listbox = tk.Listbox(frame_format_list, height=5, selectmode="single", exportselection=False)
-        self.format_listbox.pack(fill="x", expand=True)
+        format_scroll = tk.Scrollbar(frame_format_list, orient="vertical") # Scrollbar for format listbox
+        self.format_listbox = tk.Listbox(
+            frame_format_list, height=5, selectmode="single",
+            exportselection=False, yscrollcommand=format_scroll.set
+        )
+        self.format_listbox.pack(side="left", fill="x", expand=True)
+        format_scroll.config(command=self.format_listbox.yview)
+        format_scroll.pack(side="right", fill="y")
+                
+        # self.format_listbox = tk.Listbox(frame_format_list, height=5, selectmode="single", exportselection=False)
+        # self.format_listbox.pack(fill="x", expand=True)
 
         format_items = ['EPA PEMS', 'EPA Dyno', 'EPA SD', 'EPA BEV', 'FEV PEMS', 'Custom']
         for item in format_items: self.format_listbox.insert(tk.END, item)
@@ -257,6 +280,7 @@ class PEMSAnalysisGUI(object):
         idx = format_items.index('EPA PEMS')
         self.format_listbox.selection_set(idx)
 
+        
         # 20) Alignment and Report Checkboxes
         frame_ar_checks = tk.Frame(self.tab_main)
         frame_ar_checks.pack(fill="x", padx=10, pady=5)
@@ -302,7 +326,7 @@ class PEMSAnalysisGUI(object):
         ToolTip(self.btn_plot, "Plot Alignments")
 
         # 44) RUN Button
-        self.btn_run = tk.Button(self.tab_main, text="RUN", font=("Arial", 30, "bold"), bg="lightblue",
+        self.btn_run = tk.Button(self.tab_main, text="RUN", font=self.big_bold_font, bg="lightblue",
                                  command=self.run_analysis)
         self.btn_run.pack(pady=20, fill="x", padx=40)
 
@@ -340,7 +364,7 @@ class PEMSAnalysisGUI(object):
         frame_rep_fmt.pack(fill="x", padx=10, pady=5)
 
         # 60) Blue Bold Label
-        lbl_rep_fmt = tk.Label(frame_rep_fmt, text="Report Format:", font=("Arial", 12, "bold"), fg="blue")
+        lbl_rep_fmt = tk.Label(frame_rep_fmt, text="Report Format:", font=("Arial", 12, "bold"), fg="black")
         lbl_rep_fmt.pack(side="left")
 
         self.ent_report_format = tk.Entry(frame_rep_fmt)
