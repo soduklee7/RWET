@@ -106,7 +106,8 @@ Locate the “Options/Controls:” label, “Options/Controls:” input text box
 53)	Create a 10-row scrollable "options_listbox" list box labeled “Options Lists” in the “Options/Report” tab to display the Excel and matlab .mlx files in the selected folder. 
 Enable single selection in the “Options Lists” list box by clicking a mouse pointer. Locate the "options_listbox" list box just below the “Import” button. 
 Create self.df_options for reading data in the “Settings” worksheet of the double-clicked Excel file which contains the “RDE_Settings_” file name. 
-Read a matlab .m and .mlx files when double-clicking the .m and .mlx file using the "read_m_file_to_df" function and the "read_mlx_content" function, respectively. 
+Read a matlab .m when double-clicking the .m file using the "read_m_file_to_df" function. 
+Read a matlab .mlx files when double-clicking the .mlx file using the "read_mlx_content" function. 
 Save the content of the .m and .mlx files using df.to_csv().
 54)	Create a 10-row scrollable "reportPMS_listbox" list box labeled “Report PDF” in the “Options/Report” tab. Enable single selection in the list box by clicking a mouse pointer. 
 55)	Create a text box labeled the "Options/Controls:" and the "Import" button in the “Options/Report” tab to select a folder directory.
