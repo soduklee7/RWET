@@ -781,20 +781,20 @@ class PEMSAnalysisGUI(object):
         path = os.path.join(folder, filename)
 
         try:
-            if filename.lower().endswith('.mlx'):
-                # Use provided helper to read .mlx and save to CSV
-                df_mlx = read_mlx_content(path)
-                out_csv = os.path.splitext(path)[0] + ".csv"
-                df_mlx.to_csv(out_csv, index=False)
-                self.df_report = df_mlx
-                messagebox.showinfo("Saved", f"Loaded MLX and saved to:\n{out_csv}")
-            elif filename.lower().endswith('.m'):
+            if filename.lower().endswith('.m'):
                 # Use provided helper to read .mlx and save to CSV
                 df_m = read_m_file_to_df(path)
                 out_csv = os.path.splitext(path)[0] + ".csv"
                 df_m.to_csv(out_csv, index=False)
                 self.df_report = df_m
                 messagebox.showinfo("Saved", f"Loaded M and saved to:\n{out_csv}")
+            elif filename.lower().endswith('.mlx'):
+                # Use provided helper to read .mlx and save to CSV
+                df_mlx = read_mlx_content(path)
+                out_csv = os.path.splitext(path)[0] + ".csv"
+                df_mlx.to_csv(out_csv, index=False)
+                self.df_report = df_mlx
+                messagebox.showinfo("Saved", f"Loaded MLX and saved to:\n{out_csv}")
             elif filename.lower().endswith(('.xlsx', '.xls')):
                 # Read the first sheet and save to CSV
                 xls = pd.ExcelFile(path)
@@ -821,7 +821,7 @@ class PEMSAnalysisGUI(object):
         self.ent_report_format.insert(0, folder)
         
         self.reportPEMS_listbox.delete(0, tk.END)
-        files = [f for f in os.listdir(folder) if f.endswith(('.xlsx', '.mlx'))]
+        files = [f for f in os.listdir(folder) if f.endswith(('.xlsx', '.m', '.mlx'))]
         for f in files:
             self.reportPEMS_listbox.insert(tk.END, f)
 
