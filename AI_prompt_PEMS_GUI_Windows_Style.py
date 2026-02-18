@@ -106,21 +106,21 @@ Locate the “Options/Controls:” label, “Options/Controls:” input text box
 53)	Create a 10-row scrollable "options_listbox" list box labeled “Options Lists” in the “Options/Report” tab to display the Excel and matlab .mlx files in the selected folder. 
 Enable single selection in the “Options Lists” list box by clicking a mouse pointer. Locate the "options_listbox" list box just below the “Import” button. 
 Create self.df_options for reading data in the “Settings” worksheet of the double-clicked Excel file which contains the “RDE_Settings_” file name. 
-Read a matlab .m when double-clicking the .m file using the "read_m_file_to_df" function. 
-Read a matlab .mlx files when double-clicking the .mlx file using the "read_mlx_content" function. 
+Read a matlab .m when double-clicking the .m file using the "on_option_double_click" function and the "read_m_file_to_df" function. 
+Read a matlab .mlx files when double-clicking the .mlx file using the "on_reportPEMS_double_click" function and the "read_mlx_content" function. 
 Save the content of the .m and .mlx files using df.to_csv().
-54)	Create a 10-row scrollable "reportPMS_listbox" list box labeled “Report PDF” in the “Options/Report” tab. Enable single selection in the list box by clicking a mouse pointer. 
+54)	Create a 10-row scrollable "reportPEMS_listbox" list box labeled “Report PDF” in the “Options/Report” tab. Enable single selection in the list box by clicking a mouse pointer. 
 55)	Create a text box labeled the "Options/Controls:" and the "Import" button in the “Options/Report” tab to select a folder directory.
 Adjust the width of the "Options/Controls:" text box to tightly fit with the "Import" button horizontally.
 Adjust the width of the "options_listbox" list box to tightly fit with the "Import" button horizontally.
-Adjust the width of the "reportPMS_listbox" list box to tightly fit with the "Import" button horizontally.
-56)	Draw a blue solid line between the "options_listbox"  and the "reportPMS_listbox" list box.
-57)	Create the “lbl_report_fmt” text box labeled “Report Format:”, “self.ent_report_format” input text box and the “self.btn_format” button labeled “Format” to select a folder directory just above the "reportPMS_listbox" list box in the “Options/Report” tab. 
-Replace the “self.btn_format” button with the “PEMSreport.png” icon. Display the Excel and “.mlx” matlab files in the "reportPMS_listbox" list box in the selected folder when clicking the “self.btn_format” button.
+Adjust the width of the "reportPEMS_listbox" list box to tightly fit with the "Import" button horizontally.
+56)	Draw a blue solid line between the "options_listbox"  and the "reportPEMS_listbox" list box.
+57)	Create the “lbl_report_fmt” text box labeled “Report Format:”, “self.ent_report_format” input text box and the “self.btn_format” button labeled “Format” to select a folder directory just above the "reportPEMS_listbox" list box in the “Options/Report” tab. 
+Replace the “self.btn_format” button with the “PEMSreport.png” icon. Display the Excel and “.mlx” matlab files in the "reportPEMS_listbox" list box in the selected folder when clicking the “self.btn_format” button.
 58)	Remove self.align_map.get(selected_value, selected_value) in the code and set align_col = selected_value.
-59)	Locate the “lbl_report_fmt” text box, “self.ent_report_format” input text box and the “self.btn_format” button just above the "reportPMS_listbox" list box in the “Options/Report” tab. 
+59)	Locate the “lbl_report_fmt” text box, “self.ent_report_format” input text box and the “self.btn_format” button just above the "reportPEMS_listbox" list box in the “Options/Report” tab. 
 60)	Change the "Report Format:" label to blue color font and bold font style. Change the "Format" button to the “PEMSreport” icon. 
-Display the Excel and “.mlx” matlab files in the "reportPMS_listbox" list box in the selected folder when clicking the “self.btn_format” button.
+Display the Excel and “.mlx” matlab files in the "reportPEMS_listbox" list box in the selected folder when clicking the “self.btn_format” button.
 Adjust the width of the "btn_plot" button to tightly fit with the "btn_select" button horizontally.
 Adjust the width of the “ent_align_input“ input textbox to tightly fit with the "btn_plot" button.
 61) Remove the "self.ent_pems" and "self.ent_obd" related code in the "Main" tab. Remove the 'use real_col' and 'use_col' in the "plot_alignment" function. 

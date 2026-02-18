@@ -97,6 +97,7 @@ class PEMSAnalysisGUI(object):
         self.df_summary = pd.DataFrame()
         self.obd_df_summary = pd.DataFrame()
         self.df_options = pd.DataFrame()
+        self.df_report = pd.DataFrame()  # holds the last report file loaded from reportPEMS_listbox
         self.selected_columns_list = []
 
         style = ttk.Style()
@@ -377,9 +378,9 @@ class PEMSAnalysisGUI(object):
         lbl_rep_pdf = tk.Label(self.tab_options, text="Report PDF")
         lbl_rep_pdf.pack(anchor="w", padx=10)
 
-        self.reportPMS_listbox = tk.Listbox(self.tab_options, height=8, selectmode="single", exportselection=False)
-        self.reportPMS_listbox.pack(fill="x", padx=10, pady=(0, 10))
-
+        self.reportPEMS_listbox = tk.Listbox(self.tab_options, height=8, selectmode="single", exportselection=False)
+        self.reportPEMS_listbox.pack(fill="x", padx=10, pady=(0, 10))
+        self.reportPEMS_listbox.bind("<Double-Button-1>", self.on_reportPEMS_double_click)  # <-- add this
     # --- Logic Methods ---
 
     def read_file(self):
@@ -768,6 +769,50 @@ class PEMSAnalysisGUI(object):
             df_mlx = read_mlx_content(path)
             df_mlx.to_csv(path.replace('.mlx', '.csv'), index=False)  # Save to CSV for verification
 
+    def on_reportPEMS_double_click(self, event):
+        sel = self.reportPEMS_listbox.curselection()
+        if not sel:
+            return
+        filename = self.reportPEMS_listbox.get(sel)
+        folder = self.ent_report_format.get().strip()
+        if not folder:
+            messagebox.showwarning("Warning", "Please select a Report Format folder first.")
+            return
+        path = os.path.join(folder, filename)
+
+        try:
+            if filename.lower().endswith('.mlx'):
+                # Use provided helper to read .mlx and save to CSV
+                df_mlx = read_mlx_content(path)
+                out_csv = os.path.splitext(path)[0] + ".csv"
+                df_mlx.to_csv(out_csv, index=False)
+                self.df_report = df_mlx
+                messagebox.showinfo("Saved", f"Loaded MLX and saved to:\n{out_csv}")
+            elif filename.lower().endswith('.m'):
+                # Use provided helper to read .mlx and save to CSV
+                df_m = read_m_file_to_df(path)
+                out_csv = os.path.splitext(path)[0] + ".csv"
+                df_m.to_csv(out_csv, index=False)
+                self.df_report = df_m
+                messagebox.showinfo("Saved", f"Loaded M and saved to:\n{out_csv}")
+            elif filename.lower().endswith(('.xlsx', '.xls')):
+                # Read the first sheet and save to CSV
+                xls = pd.ExcelFile(path)
+                if not xls.sheet_names:
+                    messagebox.showwarning("Excel", "No sheets found in the selected workbook.")
+                    return
+                first_sheet = xls.sheet_names[0]
+                df_xls = pd.read_excel(xls, sheet_name=first_sheet)
+                out_csv = f"{os.path.splitext(path)[0]}_{first_sheet}.csv"
+                df_xls.to_csv(out_csv, index=False)
+                self.df_report = df_xls
+                messagebox.showinfo("Saved", f"Loaded Excel (sheet: {first_sheet}) and saved to:\n{out_csv}")
+            else:
+                messagebox.showwarning("Unsupported", "Please select an .xlsx/.xls or .mlx file.")
+
+        except Exception as e:
+            messagebox.showerror("Read Error", f"Failed to read file:\n{e}")
+        
     def load_report_formats(self):
         # 57) Same directory logic or specific one? Assuming ask directory or use existing
         folder = filedialog.askdirectory()
@@ -775,10 +820,10 @@ class PEMSAnalysisGUI(object):
         self.ent_report_format.delete(0, tk.END)
         self.ent_report_format.insert(0, folder)
         
-        self.reportPMS_listbox.delete(0, tk.END)
+        self.reportPEMS_listbox.delete(0, tk.END)
         files = [f for f in os.listdir(folder) if f.endswith(('.xlsx', '.mlx'))]
         for f in files:
-            self.reportPMS_listbox.insert(tk.END, f)
+            self.reportPEMS_listbox.insert(tk.END, f)
 
 if __name__ == "__main__":
     root = tk.Tk()
