@@ -77,7 +77,7 @@ class PEMSAnalysisGUI(object):
             # Default Font
             self.default_font = ("Arial", 14)
             self.big_bold_font = ("Arial", 30, "bold")
-            self.tabs_bold_font = ("Arial", 12, "bold")
+            self.tabs_bold_font = ("Arial", 14, "bold")
         else:
             self.default_font = ("Arial", 12)
             self.big_bold_font = ("Arial", 20, "bold")
