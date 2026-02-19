@@ -65,14 +65,27 @@ class PEMSAnalysisGUI(object):
         self.root = root
         self.root.title("PEMS Analysis GUI")
         self.root.geometry("600x700")
-        
-        # Default Font
-        self.default_font = ("Arial", 12)
-        self.big_bold_font = ("Arial", 20, "bold")
+
+        # root = tk.Tk()
+        # root.withdraw()  # Hide the default window
+
+        width = root.winfo_screenwidth()
+        height = root.winfo_screenheight()
+
+        # print(f"Primary Screen Resolution: {width}x{height}")
+        if height == 2160: # 1024 or height < 768:
+            # Default Font
+            self.default_font = ("Arial", 14)
+            self.big_bold_font = ("Arial", 30, "bold")
+            self.tabs_bold_font = ("Arial", 12, "bold")
+        else:
+            self.default_font = ("Arial", 12)
+            self.big_bold_font = ("Arial", 20, "bold")
+            self.tabs_bold_font = ("Arial", 12, "bold")
+
         self.root.option_add("*Font", self.default_font)
         # self.default_font = ("Segoe UI", 12)
         # self.big_bold_font = ("Segoe UI", 20, "bold")
-        self.tabs_bold_font = ("Arial", 12, "bold")
         
         icon_size = (36, 36)        
         factory = IconFactory(icon_size)        
