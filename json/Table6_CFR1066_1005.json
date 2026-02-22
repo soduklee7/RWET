@@ -1,0 +1,116 @@
+[
+    {
+        "Symbol":"\u03c1CH4",
+        "Quantity":"density of methane",
+        "g_per_m3":"666.905",
+        "g_per_ft3":"18.8847"
+    },
+    {
+        "Symbol":"\u03c1CH3OH",
+        "Quantity":"density of methanol",
+        "g_per_m3":"1332.02",
+        "g_per_ft3":"37.7185"
+    },
+    {
+        "Symbol":"\u03c1C2H5OH",
+        "Quantity":"C1-equivalent density of ethanol",
+        "g_per_m3":"957.559",
+        "g_per_ft3":"27.1151"
+    },
+    {
+        "Symbol":"\u03c1C2H4O",
+        "Quantity":"C1-equivalent density of acetaldehyde",
+        "g_per_m3":"915.658",
+        "g_per_ft3":"25.9285"
+    },
+    {
+        "Symbol":"\u03c1C3H8",
+        "Quantity":"density of propane",
+        "g_per_m3":"611.035",
+        "g_per_ft3":"17.3026"
+    },
+    {
+        "Symbol":"\u03c1C3H7OH",
+        "Quantity":"C1-equivalent density of propanol",
+        "g_per_m3":"832.74",
+        "g_per_ft3":"23.5806"
+    },
+    {
+        "Symbol":"\u03c1CO",
+        "Quantity":"density of carbon monoxide",
+        "g_per_m3":"1164.41",
+        "g_per_ft3":"32.9725"
+    },
+    {
+        "Symbol":"\u03c1CO2",
+        "Quantity":"density of carbon dioxide",
+        "g_per_m3":"1829.53",
+        "g_per_ft3":"51.8064"
+    },
+    {
+        "Symbol":"\u03c1HC-gas",
+        "Quantity":"effective density of hydrocarbon\u2014gaseous fuel",
+        "g_per_m3":"(see 3)",
+        "g_per_ft3":"(see 3)"
+    },
+    {
+        "Symbol":"\u03c1CH2O",
+        "Quantity":"density of formaldehyde",
+        "g_per_m3":"1248.21",
+        "g_per_ft3":"35.3455"
+    },
+    {
+        "Symbol":"\u03c1HC-liq",
+        "Quantity":"effective density of hydrocarbon\u2014liquid fuel",
+        "g_per_m3":"576.816",
+        "g_per_ft3":"16.3336"
+    },
+    {
+        "Symbol":"\u03c1NMHC-gas",
+        "Quantity":"effective density of nonmethane hydrocarbon\u2014gaseous fuel",
+        "g_per_m3":"(see 3)",
+        "g_per_ft3":"(see 3)"
+    },
+    {
+        "Symbol":"\u03c1NMHC-liq",
+        "Quantity":"effective density of nonmethane hydrocarbon\u2014liquid fuel",
+        "g_per_m3":"576.816",
+        "g_per_ft3":"16.3336"
+    },
+    {
+        "Symbol":"\u03c1NMHCE-gas",
+        "Quantity":"effective density of nonmethane equivalent hydrocarbon\u2014gaseous fuel",
+        "g_per_m3":"(see 3)",
+        "g_per_ft3":"(see 3)"
+    },
+    {
+        "Symbol":"\u03c1NMHCE-liq",
+        "Quantity":"effective density of nonmethane equivalent hydrocarbon\u2014liquid fuel",
+        "g_per_m3":"576.816",
+        "g_per_ft3":"16.3336"
+    },
+    {
+        "Symbol":"\u03c1NOx",
+        "Quantity":"effective density of oxides of nitrogen",
+        "g_per_m3":"1912.5",
+        "g_per_ft3":"54.156"
+    },
+    {
+        "Symbol":"\u03c1N2O",
+        "Quantity":"density of nitrous oxide",
+        "g_per_m3":"1829.66",
+        "g_per_ft3":"51.8103"
+    },
+    {
+        "Symbol":"\u03c1THC-liq",
+        "Quantity":"effective density of total hydrocarbon\u2014liquid fuel",
+        "g_per_m3":"576.816",
+        "g_per_ft3":"16.3336"
+    },
+    {
+        "Symbol":"\u03c1THCE-liq",
+        "Quantity":"effective density of total equivalent hydrocarbon\u2014liquid fuel",
+        "g_per_m3":"576.816",
+        "g_per_ft3":"16.3336"
+    }
+]

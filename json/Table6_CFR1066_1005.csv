@@ -1,0 +1,20 @@
+Symbol,Quantity,g_per_m3,g_per_ft3
+ρCH4,density of methane,666.905,18.8847
+ρCH3OH,density of methanol,1332.02,37.7185
+ρC2H5OH,C1-equivalent density of ethanol,957.559,27.1151
+ρC2H4O,C1-equivalent density of acetaldehyde,915.658,25.9285
+ρC3H8,density of propane,611.035,17.3026
+ρC3H7OH,C1-equivalent density of propanol,832.74,23.5806
+ρCO,density of carbon monoxide,1164.41,32.9725
+ρCO2,density of carbon dioxide,1829.53,51.8064
+ρHC-gas,effective density of hydrocarbon—gaseous fuel,(see 3),(see 3)
+ρCH2O,density of formaldehyde,1248.21,35.3455
+ρHC-liq,effective density of hydrocarbon—liquid fuel,576.816,16.3336
+ρNMHC-gas,effective density of nonmethane hydrocarbon—gaseous fuel,(see 3),(see 3)
+ρNMHC-liq,effective density of nonmethane hydrocarbon—liquid fuel,576.816,16.3336
+ρNMHCE-gas,effective density of nonmethane equivalent hydrocarbon—gaseous fuel,(see 3),(see 3)
+ρNMHCE-liq,effective density of nonmethane equivalent hydrocarbon—liquid fuel,576.816,16.3336
+ρNOx,effective density of oxides of nitrogen,1912.5,54.156
+ρN2O,density of nitrous oxide,1829.66,51.8103
+ρTHC-liq,effective density of total hydrocarbon—liquid fuel,576.816,16.3336
+ρTHCE-liq,effective density of total equivalent hydrocarbon—liquid fuel,576.816,16.3336
