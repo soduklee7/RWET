@@ -9,10 +9,10 @@ from PIL import Image, ImageTk, ImageDraw
 import os
 import math
 
-try:
-    import matlab.engine
-except ImportError:
-    pass # Fails silently if matlab engine is not installed
+# try:
+#     import matlab.engine
+# except ImportError:
+#     pass # Fails silently if matlab engine is not installed
 
 # -------------------------------------------------------------------------
 # Utilities and Helper Functions
@@ -367,13 +367,16 @@ class PEMSAnalysisGUI(object):
         self.tab_control = ttk.Notebook(root)
         self.tab_main = ttk.Frame(self.tab_control)
         self.tab_options = ttk.Frame(self.tab_control)
+        self.tab_syncdata = ttk.Frame(self.tab_control)
         
         self.tab_control.add(self.tab_main, text='Main')
         self.tab_control.add(self.tab_options, text='Options/Report')
+        # self.tab_control.add(self.tab_syncdata, text='Sync Data')
         self.tab_control.pack(expand=1, fill="both")
         
         self.setup_main_tab()
         self.setup_options_tab()
+        self.setup_syncdata_tab()
 
     def setup_main_tab(self):
         # 1. PEMS File
@@ -523,6 +526,22 @@ class PEMSAnalysisGUI(object):
         self.reportPEMS_listbox.pack(fill="x", padx=10, pady=(0, 10))
         self.reportPEMS_listbox.bind("<Double-Button-1>", self.on_reportPEMS_double_click)
 
+    def setup_syncdata_tab(self):
+        # Apply bold font to elements in this tab
+        from sync_menu_app1 import syncMenu_App
+        bold_font = ("Arial", 12, "bold")
+        
+        vehData = [{'name': 'RefSet', 'method': 'none', 'timeStep': 0.5, 'data': self.obd_df},
+                   {'name': 'SyncSet', 'method': 'none', 'timeStep': 0.5, 'data': self.df}]
+
+        udp = [{'none': {'time': 'time'}, 'sd': {'time': 'time'}, 'dyno': {'time': 'time'},
+                'pems': {'time': 'time'}, 'can': {'time': 'time'}},
+               {'none': {'time': 'time'}, 'sd': {'time': 'time'}, 'dyno': {'time': 'time'},
+                'pems': {'time': 'time'}, 'can': {'time': 'time'}}]
+
+        self.sync_app = syncMenu_App(vehData, udp)
+        # self.sync_app.frame.pack(fill="both", expand=True)
+        
     # --- UI Logic Methods ---
     def toggle_obd_section(self):
         state = 'normal' if self.alignment_checked.get() else 'disabled'
