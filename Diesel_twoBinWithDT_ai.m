@@ -1429,6 +1429,34 @@ function excelFile = saveVehUdpToExcel(setIdx, vehData, udp, excelFile)
         end
     end
 
+    x = vehData(setIdx).logData;
+    if isstruct(x)
+        t_logData = struct2table(x(:), 'AsArray', true);
+    elseif istable(x)
+        t_logData = x;
+    else
+        % Fallback if any2table is unavailable
+        try
+            t_logData = any2table(x, 'logData');
+        catch
+            t_logData = table(x, 'VariableNames', {'logData'});
+        end
+    end
+
+    x = vehData(setIdx).binData;
+    if isstruct(x)
+        t_binData = struct2table(x(:), 'AsArray', true);
+    elseif istable(x)
+        t_binData = x;
+    else
+        % Fallback if any2table is unavailable
+        try
+            t_binData = any2table(x, 'binData');
+        catch
+            t_binData = table(x, 'VariableNames', {'binData'});
+        end
+    end
+
     % udp_top and udp sub-structs
     % t_udp_top = struct2table(udp(setIdx), 'AsArray', true);
     t_pems    = struct2table(udp(setIdx).pems, 'AsArray', true);
@@ -1465,6 +1493,8 @@ function excelFile = saveVehUdpToExcel(setIdx, vehData, udp, excelFile)
     %------------------------------------------------------------
     sheets = {
         'vehData_data',            t_data
+        'vehData_logData',         t_logData
+        'vehData_binData',         t_binData
         'vehData_scalar',          t_scalar
         'udp_pems',                t_pems
         'udp_bins',                t_bins
