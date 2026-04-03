@@ -486,7 +486,7 @@ def plot_shift_day_emissions(df, pdf_file=None):
     fig.patch.set_facecolor("white")
     # Tile 1: Engine Power + excluded patches
     ax1 = axes[0]
-    ax1.plot(t, df["EnginePower_hp"], color="#0072BD", linewidth=1.5, label="Engine Power (hp)")
+    line1, = ax1.plot(t, df["EnginePower_hp"], color="#0072BD", linewidth=1.5, label="Engine Power (hp)")
     ax1.set_ylabel("Engine Power (hp)")
     ax1.set_title("Engine Test Data: Valid vs. Excluded Regions")
     ax1.grid(True)
@@ -502,17 +502,30 @@ def plot_shift_day_emissions(df, pdf_file=None):
     ax1.legend(loc="upper right")
     # Hide x-axis tick labels on subplot 1
     ax1.tick_params(axis='x', which='both', labelbottom=False)
+    leg = axes[0].legend(
+        labels=["Engine Power (hp)", "Excluded Data"],
+        loc="upper left",           # anchor the legend's upper-left corner
+        borderaxespad=0.0,
+        fontsize=7.65,
+        frameon=True,
+        fancybox=False,
+    )
+    
+    frame = leg.get_frame()
+    frame.set_edgecolor("black")
+    frame.set_linewidth(0.5)
+    axes[0].grid(True)
     
     # Tile 2: v_mph (left) and instCO2 (right)
     ax2 = axes[1]
     color_left = "#77AC30"
     color_right = "#D95319"
-    ax2.plot(t, df["v_mph"], color=color_left, linewidth=2, label="Vehicle Speed (mph)")
+    line3, =ax2.plot(t, df["v_mph"], color=color_left, linewidth=2, label="Vehicle Speed (mph)")
     ax2.set_ylabel("Vehicle Speed (mph)", color=color_left)
     ax2.tick_params(axis="y", labelcolor=color_left)
 
     ax2b = ax2.twinx()
-    ax2b.plot(t, df["instCO2"], color=color_right, linewidth=1.5, label="Inst. CO2 (g/s)")
+    line4, = ax2b.plot(t, df["instCO2"], color=color_right, linewidth=1.5, label="Inst. CO2 (g/s)")
     ax2b.set_ylabel("Instantaneous CO2 (g/s)", color=color_right)
     ax2b.tick_params(axis="y", labelcolor=color_right)
 
@@ -524,8 +537,23 @@ def plot_shift_day_emissions(df, pdf_file=None):
     for s, e in zip(starts, ends):
         ax2.axvspan(s + 1 - 0.5, e + 1 + 0.5, color="red", alpha=0.2)
 
-    ax2.legend(loc="upper left")
-    ax2b.legend(loc="upper right")
+    # ax2.legend(loc="upper left")
+    # ax2b.legend(loc="upper right")
+    leg = axes[1].legend(
+        handles=[line3, line4],
+        labels=["Vehicle Speed (mph)", "Instantaneous CO2 (g/s)"],
+        loc="upper left",           # anchor the legend's upper-left corner
+        borderaxespad=0.0,
+        fontsize=7.65,
+        frameon=True,
+        fancybox=False,
+    )
+    
+    frame = leg.get_frame()
+    frame.set_edgecolor("black")
+    frame.set_linewidth(0.5)
+    axes[1].grid(True)
+    
     plt.show()
     
     # Save figure to PDF
@@ -566,21 +594,37 @@ def plot_cumulative_emissions(df, eCO2_g_hp_hr, pdf_file=None):
     fig.patch.set_facecolor("white")
 
     ax1 = axes[0]
-    ax1.plot(t_valid, valid_df["Cum_NOx_g"], color="#A2142F", linewidth=2, label="Cumulative NOx (g)")
+    line1, =ax1.plot(t_valid, valid_df["Cum_NOx_g"], color="#A2142F", linewidth=2, label="Cumulative NOx (g)")
     ax1.set_ylabel("Cumulative NOx (g)")
     ax1.set_title("Cumulative Emissions Accrual During Valid Testing")
     ax1.grid(True)
     ax1b = ax1.twinx()
-    ax1b.plot(t_valid, valid_df["Cum_CO2_g"], "--", color="#7E2F8E", linewidth=2, label="Cumulative CO2 (g)")
-    ax1b.set_ylabel("Cumulative CO2 (g)")
+    line2, = ax1b.plot(t_valid, valid_df["Cum_CO2_g"], "--", color="#7E2F8E", linewidth=2, label="Cumulative CO2 (g)")
+    ax1b.set_ylabel("Cumulative CO2 (g)", color="#7E2F8E")
+    ax1b.tick_params(axis="y", color='#7E2F8E', labelcolor="#7E2F8E")
+
     ax1.legend(loc="best")
 
     # Hide x-axis tick labels on subplot 1
     ax1.tick_params(axis='x', which='both', labelbottom=False)
-
+    leg = axes[0].legend(
+        handles=[line1, line2],
+        labels=["Cumulative NOx (g)", "Cumulative CO2 (g)"],
+        loc="best",           # anchor the legend's upper-left corner
+        borderaxespad=0.0,
+        fontsize=7.65,
+        frameon=True,
+        fancybox=False,
+    )
+    
+    frame = leg.get_frame()
+    frame.set_edgecolor("black")
+    frame.set_linewidth(0.5)
+    axes[0].grid(True)
+    
     ax2 = axes[1]
-    ax2.plot(t_valid, valid_df["BS_NOx_g_hp_hr"], color="#0072BD", linewidth=2, label="BS NOx via Work (g/hp-hr)")
-    ax2.plot(t_valid, valid_df["bs_nox_eCO2"], color="#77AC30", linewidth=2, label="BS NOx via eCO2 (g/hp-hr)")
+    line1, = ax2.plot(t_valid, valid_df["BS_NOx_g_hp_hr"], color="#0072BD", linewidth=2, label="BS NOx via Work (g/hp-hr)")
+    line2, = ax2.plot(t_valid, valid_df["bs_nox_eCO2"], color="#77AC30", linewidth=2, label="BS NOx via eCO2 (g/hp-hr)")
     if not valid_df["BS_NOx_g_hp_hr"].dropna().empty:
         final_avg = float(valid_df["BS_NOx_g_hp_hr"].dropna().iloc[-1])
         ax2.axhline(final_avg, linestyle=":", color="black", linewidth=1.5, label=f"Final Avg: {final_avg:.3f} g/hp-hr")
@@ -589,7 +633,20 @@ def plot_cumulative_emissions(df, eCO2_g_hp_hr, pdf_file=None):
     ax2.set_ylabel("Cum. BS NOx (g/hp-hr)")
     ax2.grid(True)
     ax2.legend(loc="best")
-
+    leg = axes[1].legend(
+        labels=["BS NOx via Work (g/hp-hr)", "BS NOx via eCO2 (g/hp-hr)", f"Final Avg: {final_avg:.3f} g/hp-hr"],
+        loc="best",           # anchor the legend's upper-left corner
+        borderaxespad=0.0,
+        fontsize=7.65,
+        frameon=True,
+        fancybox=False,
+    )
+    
+    frame = leg.get_frame()
+    frame.set_edgecolor("black")
+    frame.set_linewidth(0.5)
+    axes[1].grid(True)
+    
     plt.show()
 
     # pdf_file = Path('cumulative_emissions.pdf')
@@ -856,7 +913,7 @@ def run_emissions_analysis(excelfile, binData_avg, raw, udp, MPG=None, fuel_dens
             results["sub_interval_df"] = sub_interval_df
             results["compliance_df"] = compliance_df
  
-            excel_file = Path('maw_outputs.xlsx')
+            excel_file = Path('MAW_outputs.xlsx')
 
             # Start fresh (optional)
             if excel_file.exists():
