@@ -667,6 +667,19 @@ def reportPEMS_HDOffcycleBins(
     bin2_hc_image_path = _figure_bin2_hc(setIdx, vehData, udp, binData, logData, binData_avg)
     story.append(Image(bin2_hc_image_path, width=7.5 * inch, height=8.0 * inch))
 
+    # GPS Plot
+    story.append(PageBreak())
+    story.append(Spacer(1, 0.25 * inch))  # 0.25" gap below the header
+    story.append(Paragraph("Test Information", BLUE_BOLD_LEFT))
+    story.append(header_table())
+    story.append(Paragraph("Figure:  GPS Latitude and Longitude Test Route", BLUE_BOLD_LEFT))
+    lat_col = 'GPSLatitude' #udp[setIdx].pems.latitude     # e.g., "Latitude"
+    lon_col = 'GPSLongitude' # udp[setIdx].pems.longitude    # e.g., "Longitude"
+    # df = vehData # [setIdx].data     
+    [gps_image_path, img_width, img_height] = plot_gps_route(vehData, lat_col, lon_col, output="geo_image.png")
+    # gps_image_path = plot_gps_route_interactive(df, lat_col, lon_col, output_html="geo_map.html")
+    story.append(Image(gps_image_path, width=7.5 * inch*img_width/img_height, height=8.0 * inch))
+    
     # Build the PDF
     doc.build(story)
 
@@ -675,7 +688,246 @@ def reportPEMS_HDOffcycleBins(
 
     return pdf_path
 
+import numpy as np
+import matplotlib.pyplot as plt
+import geopandas as gpd
+from shapely.geometry import LineString, Point
+import contextily as cx
 
+def plot_gps_route(
+    df,
+    lat_col,
+    lon_col,
+    output="geo_image.png",
+    tile=cx.providers.OpenStreetMap.Mapnik,
+    start_location=None,  # (lat, lon) in EPSG:4326; if None, uses first valid point
+):
+    """
+    Plot a GPS route on a street basemap and save to a PNG. Optionally mark
+    a start location.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Data with latitude/longitude columns.
+    lat_col : str
+        Column name for latitude (EPSG:4326).
+    lon_col : str
+        Column name for longitude (EPSG:4326).
+    output : str
+        Output image filename (PNG).
+    tile : contextily provider
+        Basemap provider (default: OpenStreetMap streets).
+    start_location : tuple or None
+        (lat, lon) in EPSG:4326 for start marker. If None, the first valid
+        GPS point is used.
+
+    Returns
+    -------
+    tuple
+        (output_filename, width_in, height_in) where width_in and height_in
+        are the inches of the saved image (accounting for bbox_inches='tight'
+        and pad_inches).
+    """
+    # Drop NaNs and build the LineString in lon/lat order
+    mask = df[lat_col].notna() & df[lon_col].notna()
+    lats = df.loc[mask, lat_col].to_numpy()
+    lons = df.loc[mask, lon_col].to_numpy()
+
+    if lats.size < 2:
+        raise ValueError("Need at least two valid GPS points to plot a route.")
+
+    line = LineString(np.column_stack([lons, lats]))
+
+    # Create GeoDataFrame in WGS84 and project to Web Mercator for web tiles
+    gdf = gpd.GeoDataFrame({"route": [1]}, geometry=[line], crs="EPSG:4326").to_crs(epsg=3857)
+
+    # Determine start location (lat, lon) in EPSG:4326
+    if start_location is None:
+        start_lat, start_lon = float(lats[0]), float(lons[0])
+    else:
+        if not (isinstance(start_location, (list, tuple)) and len(start_location) == 2):
+            raise ValueError("start_location must be a (lat, lon) tuple.")
+        start_lat, start_lon = float(start_location[0]), float(start_location[1])
+
+    # Start point GeoDataFrame (project to EPSG:3857)
+    start_pt = Point(start_lon, start_lat)  # Point expects (x=lon, y=lat)
+    start_gdf = gpd.GeoDataFrame({"label": ["Start"]}, geometry=[start_pt], crs="EPSG:4326").to_crs(epsg=3857)
+
+    # Figure size roughly matching your MATLAB image size
+    fig, ax = plt.subplots(figsize=(7, 7.25), dpi=150)
+
+    # Plot route (blue dashed, like 'b--')
+    gdf.plot(ax=ax, color="blue", linewidth=2, linestyle="--", zorder=3)
+
+    # Plot start marker
+    start_gdf.plot(
+        ax=ax,
+        marker="o",
+        color="green",
+        edgecolor="white",
+        markersize=60,
+        zorder=5,
+    )
+
+    # Label the start point
+    sx, sy = start_gdf.geometry.iloc[0].x, start_gdf.geometry.iloc[0].y
+    ax.annotate(
+        "", # "Start",
+        xy=(sx, sy),
+        xytext=(6, 6),
+        textcoords="offset points",
+        fontsize=10,
+        color="black",
+        bbox=dict(facecolor="white", alpha=0.7, edgecolor="none"),
+        zorder=6,
+    )
+
+    # Set limits with padding, including the start point
+    xmin, ymin, xmax, ymax = gdf.total_bounds
+    sminx, sminy, smaxx, smaxy = start_gdf.total_bounds
+    xmin, ymin = min(xmin, sminx), min(ymin, sminy)
+    xmax, ymax = max(xmax, smaxx), max(ymax, smaxy)
+    pad_x = (xmax - xmin) * 0.05 if xmax > xmin else 100
+    pad_y = (ymax - ymin) * 0.05 if ymax > ymin else 100
+    ax.set_xlim(xmin - pad_x, xmax + pad_x)
+    ax.set_ylim(ymin - pad_y, ymax + pad_y)
+
+    # Add a “streets” basemap
+    cx.add_basemap(ax, source=tile, crs=gdf.crs)
+
+    ax.set_axis_off()
+    # ax.set_title("GPS Latitude and Longitude Test Route", fontsize=12)
+    plt.tight_layout()
+
+    # Compute the tight (cropped) inches that savefig will use
+    fig.canvas.draw()  # ensure a renderer exists
+    renderer = fig.canvas.get_renderer()
+    tight_bbox = fig.get_tightbbox(renderer)
+
+    # Use the same pad that savefig will apply
+    pad_inches = 0.1  # default in savefig unless overridden
+    saved_width_in = tight_bbox.width + 2 * pad_inches
+    saved_height_in = tight_bbox.height + 2 * pad_inches
+
+    # Save with matching pad to keep sizes consistent
+    plt.savefig(output, bbox_inches="tight", pad_inches=pad_inches, facecolor="white")
+    plt.close(fig)
+
+    return output, saved_width_in, saved_height_in
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import geopandas as gpd
+# from shapely.geometry import LineString
+# import contextily as cx
+
+# def plot_gps_route(df, lat_col, lon_col, output="geo_image.png",
+#                    tile=cx.providers.OpenStreetMap.Mapnik):
+#     """
+#     Plot a GPS route on a street basemap and save to a PNG.
+
+#     Parameters
+#     ----------
+#     df : pandas.DataFrame
+#         Data with latitude/longitude columns.
+#     lat_col : str
+#         Column name for latitude (EPSG:4326).
+#     lon_col : str
+#         Column name for longitude (EPSG:4326).
+#     output : str
+#         Output image filename (PNG).
+#     tile : contextily provider
+#         Basemap provider (default: OpenStreetMap streets).
+
+#     Returns
+#     -------
+#     tuple
+#         (output_filename, width_in, height_in) where width_in and height_in
+#         are the inches of the saved image (accounting for bbox_inches='tight'
+#         and pad_inches).
+#     """
+#     # Drop NaNs and build the LineString in lon/lat order
+#     mask = df[lat_col].notna() & df[lon_col].notna()
+#     lats = df.loc[mask, lat_col].to_numpy()
+#     lons = df.loc[mask, lon_col].to_numpy()
+
+#     if lats.size < 2:
+#         raise ValueError("Need at least two valid GPS points to plot a route.")
+
+#     line = LineString(np.column_stack([lons, lats]))
+
+#     # Create GeoDataFrame in WGS84 and project to Web Mercator for web tiles
+#     gdf = gpd.GeoDataFrame({"route": [1]}, geometry=[line], crs="EPSG:4326").to_crs(epsg=3857)
+
+#     # Figure size roughly matching your MATLAB image size
+#     fig, ax = plt.subplots(figsize=(7, 7.25), dpi=150)
+
+#     # Plot route (blue dashed, like 'b--')
+#     gdf.plot(ax=ax, color="blue", linewidth=2, linestyle="--")
+
+#     # Set limits with a small padding so tiles load around the line
+#     xmin, ymin, xmax, ymax = gdf.total_bounds
+#     pad_x = (xmax - xmin) * 0.05 if xmax > xmin else 100
+#     pad_y = (ymax - ymin) * 0.05 if ymax > ymin else 100
+#     ax.set_xlim(xmin - pad_x, xmax + pad_x)
+#     ax.set_ylim(ymin - pad_y, ymax + pad_y)
+
+#     # Add a “streets” basemap
+#     cx.add_basemap(ax, source=tile, crs=gdf.crs)
+
+#     ax.set_axis_off()
+#     # ax.set_title("GPS Latitude and Longitude Test Route", fontsize=12)
+#     plt.tight_layout()
+
+#     # Compute the tight (cropped) inches that savefig will use
+#     fig.canvas.draw()  # ensure a renderer exists
+#     renderer = fig.canvas.get_renderer()
+#     tight_bbox = fig.get_tightbbox(renderer)
+
+#     # Use the same pad that savefig will apply
+#     pad_inches = 0.1  # default in savefig unless overridden
+#     saved_width_in = tight_bbox.width + 2 * pad_inches
+#     saved_height_in = tight_bbox.height + 2 * pad_inches
+
+#     # Save with matching pad to keep sizes consistent
+#     plt.savefig(output, bbox_inches="tight", pad_inches=pad_inches, facecolor="white")
+#     plt.close(fig)
+
+#     return output, saved_width_in, saved_height_in
+
+import folium
+
+def plot_gps_route_interactive(df, lat_col, lon_col, output_html="geo_map.html"):
+    pts = df[[lat_col, lon_col]].dropna()
+    if pts.empty:
+        raise ValueError("No valid GPS points to plot.")
+    # center = [pts[lat_col].mean(), pts[lon_col].mean()]
+    # m = folium.Map(location=center, tiles="OpenStreetMap", zoom_start=13)
+    # folium.PolyLine(
+    #     pts[[lat_col, lon_col]].values.tolist(),
+    #     color="blue", weight=3, dash_array="5,5"
+    # ).add_to(m)
+    # Center the map on the first point
+    # Drop rows where 'iGPS_LAT' or 'iGPS_LON' are NaN
+    df = df.dropna(subset=[lat_col, lon_col])
+
+    start_location = [df[lat_col].iloc[0], df[lon_col].iloc[0]]
+    m = folium.Map(location=start_location, zoom_start=15)
+
+    # Add the route as a polyline
+    route = list(zip(df[lat_col].astype(float), df[lon_col].astype(float)))
+    folium.PolyLine(route, color='blue', weight=5, opacity=0.7).add_to(m)
+
+    # Optionally, add start and end markers
+    folium.Marker(route[0], tooltip='Start').add_to(m)
+    folium.Marker(route[-1], tooltip='End').add_to(m)
+
+    # Save to HTML and display
+    # m.save('driving_route.html')
+    # print("Map saved as driving_route.html")
+
+    m.save(output_html)
+    return output_html
 # ----------------------------- Helper functions and figure builders -----------------------------
 
 def coerce_text(x: Any) -> str:

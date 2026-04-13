@@ -148,6 +148,7 @@ def calculate_maw_and_subintervals(df, eCO2_g_hp_hr, pmax_hp):
         | (df["AmbTempC"] > tmax_c)
         | (df["Altitude_ft"] > 5500.0)
         | (df["Engine_RPM"] < 1.0)
+        | (df["ZeroCheck"] == 1.0)
         | (df["In_Regen"].fillna(0).astype(bool))
     ).fillna(True)
 
@@ -682,6 +683,7 @@ def calculate_shift_day_emissions(df, ftp_eco2_g_hp_hr, pmax_hp):
         | (df["AmbTempC"] > tmax_c)
         | (df["Altitude_ft"] > 5500.0)
         | (df["Engine_RPM"] < 1.0)
+        | (df["ZeroCheck"] == 1.0)
         | (df["In_Regen"].fillna(0).astype(bool))
     ).fillna(True)
     df["Sub_Interval_ID"] = np.cumsum(df["Excluded_Data"].astype(int))
@@ -836,6 +838,18 @@ def run_emissions_analysis(excelfile, binData_avg, raw, udp, MPG=None, fuel_dens
     # Instantaneous fuel flow (g/s)
     inst_fuel_series = get_column(raw, ["InstantaneousFuelFlow", "Instantaneous Fuel Flow"])
 
+    # ZeroCheck_col = getTextColumn(raw, {'Zero_Check_Flag','Zero_Check'});
+    ZeroCheck_col = first_existing_column(raw, ['Zero_Check_Flag', 'Zero_Check'])
+    GasPath_col = first_existing_column(raw, ['Gas Path', 'GasPath'])
+
+    if GasPath_col is not None:
+        raw['ZeroCheck'] = raw[GasPath_col].isin(['CALIBRATION', 'STANDBY', 'AMBIENT']).astype(int)
+
+        if ('ZeroCheck' in raw.columns) and (int(raw['ZeroCheck'].sum()) > 0):
+            print(f"# of non-SANPLE = {int(raw['ZeroCheck'].sum())}")
+    elif ZeroCheck_col is not None:
+        raw['ZeroCheck'] = raw[ZeroCheck_col].isin(['Y']).astype(int)
+        
     # Build df with key signals (robust fallbacks if missing)
     df = pd.DataFrame()
     df["Time"] = to_numeric(get_column(raw, ["TIME"]))
@@ -876,6 +890,7 @@ def run_emissions_analysis(excelfile, binData_avg, raw, udp, MPG=None, fuel_dens
 
     # Instantaneous fuel flow (g/s)
     df["instFuelRate"] = to_numeric(inst_fuel_series)
+    df["ZeroCheck"] = raw['ZeroCheck'] 
 
     # Replace fully-missing columns with zeros to avoid NaN propagation in sums
     for c in ["instCO", "instCO2", "instPM", "instHC", "instNOx", "Engine_RPM", "Engine_Torque_Nm", "v_mph", "instFuelRate"]:
@@ -1049,6 +1064,13 @@ def _mat_to_py(o):
     if isinstance(o, np.ndarray):
         return o
     return o
+
+def first_existing_column(df, candidates):
+    """Return the first column name from candidates that exists in df, else None."""
+    for c in candidates:
+        if c in df.columns:
+            return c
+    return None
 
 # Usage:
 
